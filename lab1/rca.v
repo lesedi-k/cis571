@@ -37,8 +37,8 @@ module fulladder2(input wire        cin,
                   output wire       cout);
    
    wire cout_tmp; 
-   fulladder a0(.cin(cin), .a(a[0]), .b(b[0]), .s(s[0]), .cout(cout));
-   fulladder a1(.cin(cout_tmp), .a(a[1]), .b(b[1]), .s(s[1]), .cout(cout_tmp));
+   fulladder a0(.cin(cin), .a(a[0]), .b(b[0]), .s(s[0]), .cout(cout_temp));
+   fulladder a1(.cin(cout_tmp), .a(a[1]), .b(b[1]), .s(s[1]), .cout(cout));
 endmodule
 
 /* 4-bit ripple-carry adder that adds two 4-bit numbers (taken from the
