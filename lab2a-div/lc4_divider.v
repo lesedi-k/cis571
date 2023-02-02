@@ -39,17 +39,12 @@ module lc4_divider_one_iter(input  wire [15:0] i_dividend,
 
       //   dividend = dividend << 1;
 
-      wire [15:0] remainder = (i_remainder << 1) | ((i_dividend >> 15) & 16'd1);
-
-      begin
-            if (remainder < i_divisor)
-                  assign o_quotient = i_quotient << 1;
-            else 
-                  assign o_quotient = (i_quotient << 1) | 16'd1;
-                  assign o_remainder = remainder - i_divisor; 
-      end 
+      wire [15:0] remainder = (i_remainder <<< 1) | ((i_dividend >>> 15) & 16'd1);
+      assign o_quotient = (remainder < i_divisor) ? (i_quotient <<< 1) : ((i_quotient <<< 1) | 16'd1 ) ;
+      assign o_remainder = (remainder >= i_divisor) ? (remainder - i_divisor) : remainder; 
       assign o_dividend = i_dividend << 1;
 
       //Questions: should we use  subtractor module?
+      //comparison module?
 endmodule
 
