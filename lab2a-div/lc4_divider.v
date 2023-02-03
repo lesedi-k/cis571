@@ -15,8 +15,44 @@ module lc4_divider(input  wire [15:0] i_dividend,
                    output wire [15:0] o_remainder,
                    output wire [15:0] o_quotient);
 
-      /*** YOUR CODE HERE ***/
-      
+      wire[15:0] q_inter[14:0];
+      wire[15:0] r_inter[14:0];
+      wire[15:0] d_inter[14:0];
+
+      lc4_divider_one_iter divi_first(    .i_dividend(i_dividend), 
+                                    .i_divisor(i_divisor), 
+                                    .i_remainder(16'b0), 
+                                    .i_quotient(16'b0), 
+                                    .o_dividend(d_inter[0]), 
+                                    .o_remainder(r_inter[0]), 
+                                    .o_quotient(q_inter[0]));
+
+
+      genvar i;
+      generate
+      for (i = 1; i < 15; i = i + 1) begin: middle_divider
+            lc4_divider_one_iter divi(    .i_dividend(d_inter[i-1]), 
+                                          .i_divisor(i_divisor), 
+                                          .i_remainder(r_inter[i-1]), 
+                                          .i_quotient(q_inter[i-1]), 
+                                          .o_dividend(d_inter[i]), 
+                                          .o_remainder(r_inter[i]), 
+                                          .o_quotient(q_inter[i]));
+      end
+      endgenerate
+
+      wire[15:0] final_r;
+      wire[15:0] final_q;
+
+      lc4_divider_one_iter divi_last(    .i_dividend(d_inter[14]), 
+                                          .i_divisor(i_divisor), 
+                                          .i_remainder(r_inter[14]), 
+                                          .i_quotient(q_inter[14]), 
+                                          .o_remainder(final_r[15:0]), 
+                                          .o_quotient(final_q[15:0]));
+
+      assign o_remainder = (i_divisor == 0) ? (16'd0) : (final_r);
+      assign o_quotient = (i_divisor == 0) ? (16'd0) : (final_q);
 
 endmodule 
 
