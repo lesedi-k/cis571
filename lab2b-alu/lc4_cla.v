@@ -1,4 +1,6 @@
-/* TODO: INSERT NAME AND PENNKEY HERE */
+
+/* Yang Du, ydu24 */
+/* Lesedi Kereteletswe, lesedik */
 
 `timescale 1ns / 1ps
 `default_nettype none
@@ -65,8 +67,7 @@ module cla16
    input wire         cin,
    output wire [15:0] sum);
 
-    wire[15:0] g, p; 
-    wire[15:0] c;
+    wire[15:0] g, p, c; 
     wire g30, g150, g74, g118, g1512; 
     wire p30, p150, p74, p118, p1512;
 
@@ -105,19 +106,12 @@ module cla16
       .cout(c[15:13])
     );
 
-    gp4 last( .gin({g30, g74, g118, g1512}) , 
-      .pin({p30, p74, p118, p1512}), 
+    gp4 last( .gin({g1512, g118, g74, g30}) , 
+      .pin({p1512, p118, p74, p30}), 
       .cin(c[0]), 
       .gout(g150), .pout(p150), 
-      .cout({c[4], c[8], c[12]})
+      .cout({c[12], c[8], c[4]})
     );
-
-
-
-    // always @(c) begin
-    //   $write("%b ", c);  // display after any change in c
-    // end
-
 
     /*
       Get sum values
