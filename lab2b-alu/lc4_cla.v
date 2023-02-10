@@ -28,7 +28,29 @@ module gp4(input wire [3:0] gin, pin,
            input wire cin,
            output wire gout, pout,
            output wire [2:0] cout);
-   
+
+          assign cout[0] = gin[0] | (pin[0] & cin);
+
+          wire p10 = pin[0] & pin[1];
+          wire g10 = gin[1] | (gin[0] & pin[1]);
+          assign cout[1] = (p10 & cin) | g10;
+
+          wire p20 = (&pin[2:0]);
+          wire g20 = (g10 & pin[2]);
+          assign cout[2] =  (p20 & cin) | g20 | gin[2] ;
+
+          assign pout = (& pin);
+
+      
+          wire p31 = (&pin[3:1]);
+          wire p32 = (&pin[3:2]);
+          wire g32 = (gin[2] & pin[3]) | gin[3];
+          assign gout = g32 | (p32 & g10);
+
+          // always @(cout) begin
+          //   $write("%b ", cout);  // display after any change in c
+          // end
+          
 endmodule
 
 /**
@@ -42,6 +64,67 @@ module cla16
   (input wire [15:0]  a, b,
    input wire         cin,
    output wire [15:0] sum);
+
+    wire[15:0] g, p; 
+    wire[15:0] c;
+    wire g30, g150, g74, g118, g1512; 
+    wire p30, p150, p74, p118, p1512;
+
+    generate
+      for (genvar i = 0; i < 16; i = i + 1) begin
+          gp1 m(.a(a[i]), .b(b[i]), .g(g[i]), .p(p[i]));
+      end
+    endgenerate
+
+    /*
+      get carry values
+    */
+    assign c[0] = cin;
+
+    gp4 first( .gin(g[3:0]) , .pin(p[3:0]), 
+      .cin(c[0]), 
+      .gout(g30), .pout(p30), 
+      .cout(c[3:1])
+    );
+
+    gp4 sec( .gin(g[7:4]) , .pin(p[7:4]), 
+      .cin(c[4]), 
+      .gout(g74), .pout(p74), 
+      .cout(c[7:5])
+    );
+
+    gp4 third( .gin(g[11:8]) , .pin(p[11:8]), 
+      .cin(c[8]), 
+      .gout(g118), .pout(p118), 
+      .cout(c[11:9])
+    );
+
+    gp4 fourth( .gin(g[15:12]) , .pin(p[15:12]), 
+      .cin(c[12]), 
+      .gout(g1512), .pout(p1512), 
+      .cout(c[15:13])
+    );
+
+    gp4 last( .gin({g30, g74, g118, g1512}) , 
+      .pin({p30, p74, p118, p1512}), 
+      .cin(c[0]), 
+      .gout(g150), .pout(p150), 
+      .cout({c[4], c[8], c[12]})
+    );
+
+
+
+    // always @(c) begin
+    //   $write("%b ", c);  // display after any change in c
+    // end
+
+
+    /*
+      Get sum values
+    */
+    for (genvar j = 0; j < 16; j = j + 1) begin
+        assign sum[j] = a[j] ^ b[j] ^ c[j];
+    end
 
 endmodule
 
