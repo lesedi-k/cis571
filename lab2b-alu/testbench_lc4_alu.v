@@ -90,26 +90,26 @@ module test_alu;
       // *** GP TESTING ***
       // ******************
 
-      // while (6 == $fscanf(gpInFile, "gin:%b pin:%b cin:%b => gout:%b pout:%b cout:%b\n", gin, pin, cin, expectedGout, expectedPout, expectedCout)) begin
-      //    #2; // wait for inputs to propagate through GP unit
-      //    tests = tests+1;
-      //    lineno = lineno+1;
+      while (6 == $fscanf(gpInFile, "gin:%b pin:%b cin:%b => gout:%b pout:%b cout:%b\n", gin, pin, cin, expectedGout, expectedPout, expectedCout)) begin
+         #2; // wait for inputs to propagate through GP unit
+         tests = tests+1;
+         lineno = lineno+1;
          
-      //    if (actualGout !== expectedGout || actualPout != expectedPout || actualCout !== expectedCout) begin
-      //       errors = errors+1;
-      //       if (errors < `MAX_ERRORS_TO_DISPLAY) begin
-      //          $write("[gp] error at line %04d: ",    lineno);
-      //          $write("gin:%b pin:%b cin:%b ", gin, pin, cin);
-      //          $write("produced gout:%b pout:%b cout:%b ", actualGout, actualPout, actualCout);
-      //          $write("instead of gout:%b pout:%b cout:%b", expectedGout, expectedPout, expectedCout);
-      //          $display("");
-      //       end
-      //       if (`EXIT_AFTER_FIRST_ERROR) begin
-      //          $display("Exiting after first error..."); 
-      //          $finish;
-      //       end
-      //    end
-      // end
+         if (actualGout !== expectedGout || actualPout != expectedPout || actualCout !== expectedCout) begin
+            errors = errors+1;
+            if (errors < `MAX_ERRORS_TO_DISPLAY) begin
+               $write("[gp] error at line %04d: ",    lineno);
+               $write("gin:%b pin:%b cin:%b ", gin, pin, cin);
+               $write("produced gout:%b pout:%b cout:%b ", actualGout, actualPout, actualCout);
+               $write("instead of gout:%b pout:%b cout:%b", expectedGout, expectedPout, expectedCout);
+               $display("");
+            end
+            if (`EXIT_AFTER_FIRST_ERROR) begin
+               $display("Exiting after first error..."); 
+               $finish;
+            end
+         end
+      end
 
 
       
@@ -120,7 +120,7 @@ module test_alu;
 
       //1111 1000 0000 0011
 
-      for (claTests=0; claTests < 8; claTests=claTests+1) begin
+      for (claTests=0; claTests < 10000; claTests=claTests+1) begin
          ain = $urandom;
          bin = $urandom;
          cin = $urandom % 2;
@@ -155,9 +155,9 @@ module test_alu;
       //    lineno = lineno+1;
                 
       //    // write the output to the output trace file
-      //    //if (outputFile) begin
-      //    //   $fdisplay(outputFile, "%b %b %b %b %b", insn, pc, r1data, r2data, actualALUResult);
-      //    //end
+      //    if (outputFile) begin
+      //      $fdisplay(outputFile, "%b %b %b %b %b", insn, pc, r1data, r2data, actualALUResult);
+      //    end
          
       //    // print an error if one occurred
       //    if (actualALUResult !== expectedALUResult) begin
