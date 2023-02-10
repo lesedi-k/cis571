@@ -49,10 +49,6 @@ module gp4(input wire [3:0] gin, pin,
           wire g32 = (gin[2] & pin[3]) | gin[3];
           assign gout = g32 | (p32 & g10);
 
-          // always @(cout) begin
-          //   $write("%b ", cout);  // display after any change in c
-          // end
-          
 endmodule
 
 /**
