@@ -1,0 +1,81 @@
+Copyright 1986-2020 Xilinx, Inc. All Rights Reserved.
+------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2020.2 (lin64) Build 3064766 Wed Nov 18 09:12:47 MST 2020
+| Date         : Fri Feb 10 06:29:10 2023
+| Host         : big17.seas.upenn.edu running 64-bit openSUSE Leap 15.4
+| Command      : report_timing -file ./output/post_route_timing_report.txt
+| Design       : lc4_system_alu
+| Device       : 7z020-clg484
+| Speed File   : -1  PRODUCTION 1.12 2019-11-22
+------------------------------------------------------------------------------------
+
+Timing Report
+
+Slack (MET) :             4.347ns  (required time - arrival time)
+  Source:                 write_base_addr_reg[4]/C
+                            (rising edge-triggered cell FDRE clocked by oled_ctrl_clk  {rise@0.000ns fall@5.000ns period=10.000ns})
+  Destination:            m_OLEDCtrl/temp_write_ascii_reg[6]/D
+                            (rising edge-triggered cell FDRE clocked by oled_ctrl_clk  {rise@0.000ns fall@5.000ns period=10.000ns})
+  Path Group:             oled_ctrl_clk
+  Path Type:              Setup (Max at Slow Process Corner)
+  Requirement:            10.000ns  (oled_ctrl_clk rise@10.000ns - oled_ctrl_clk rise@0.000ns)
+  Data Path Delay:        5.632ns  (logic 1.637ns (29.069%)  route 3.995ns (70.931%))
+  Logic Levels:           5  (LUT4=1 LUT6=3 MUXF7=1)
+  Clock Path Skew:        -0.015ns (DCD - SCD + CPR)
+    Destination Clock Delay (DCD):    5.024ns = ( 15.024 - 10.000 ) 
+    Source Clock Delay      (SCD):    5.469ns
+    Clock Pessimism Removal (CPR):    0.430ns
+  Clock Uncertainty:      0.035ns  ((TSJ^2 + TIJ^2)^1/2 + DJ) / 2 + PE
+    Total System Jitter     (TSJ):    0.071ns
+    Total Input Jitter      (TIJ):    0.000ns
+    Discrete Jitter          (DJ):    0.000ns
+    Phase Error              (PE):    0.000ns
+
+    Location             Delay type                Incr(ns)  Path(ns)    Netlist Resource(s)
+  -------------------------------------------------------------------    -------------------
+                         (clock oled_ctrl_clk rise edge)
+                                                      0.000     0.000 r  
+    Y9                                                0.000     0.000 r  oled_ctrl_clk (IN)
+                         net (fo=0)                   0.000     0.000    oled_ctrl_clk
+    Y9                   IBUF (Prop_ibuf_I_O)         1.490     1.490 r  oled_ctrl_clk_IBUF_inst/O
+                         net (fo=1, routed)           2.171     3.661    oled_ctrl_clk_IBUF
+    BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.101     3.762 r  oled_ctrl_clk_IBUF_BUFG_inst/O
+                         net (fo=195, routed)         1.707     5.469    oled_ctrl_clk_IBUF_BUFG
+    SLICE_X82Y72         FDRE                                         r  write_base_addr_reg[4]/C
+  -------------------------------------------------------------------    -------------------
+    SLICE_X82Y72         FDRE (Prop_fdre_C_Q)         0.518     5.987 r  write_base_addr_reg[4]/Q
+                         net (fo=108, routed)         2.135     8.122    m_OLEDCtrl/p_0_in[1]
+    SLICE_X85Y65         LUT4 (Prop_lut4_I3_O)        0.152     8.274 r  m_OLEDCtrl/temp_write_ascii[6]_i_44/O
+                         net (fo=1, routed)           0.636     8.910    m_OLEDCtrl/temp_write_ascii[6]_i_44_n_0
+    SLICE_X83Y66         LUT6 (Prop_lut6_I0_O)        0.332     9.242 r  m_OLEDCtrl/temp_write_ascii[6]_i_27/O
+                         net (fo=1, routed)           0.000     9.242    m_OLEDCtrl/temp_write_ascii[6]_i_27_n_0
+    SLICE_X83Y66         MUXF7 (Prop_muxf7_I0_O)      0.212     9.454 r  m_OLEDCtrl/temp_write_ascii_reg[6]_i_13/O
+                         net (fo=1, routed)           0.433     9.888    m_OLEDCtrl/temp_write_ascii_reg[6]_i_13_n_0
+    SLICE_X83Y66         LUT6 (Prop_lut6_I0_O)        0.299    10.187 r  m_OLEDCtrl/temp_write_ascii[6]_i_6/O
+                         net (fo=1, routed)           0.790    10.977    alu/my_div/divi_last/write_ascii_data__0[5]
+    SLICE_X84Y66         LUT6 (Prop_lut6_I5_O)        0.124    11.101 r  alu/my_div/divi_last/temp_write_ascii[6]_i_2/O
+                         net (fo=1, routed)           0.000    11.101    m_OLEDCtrl/temp_write_ascii_reg[6]_0[5]
+    SLICE_X84Y66         FDRE                                         r  m_OLEDCtrl/temp_write_ascii_reg[6]/D
+  -------------------------------------------------------------------    -------------------
+
+                         (clock oled_ctrl_clk rise edge)
+                                                     10.000    10.000 r  
+    Y9                                                0.000    10.000 r  oled_ctrl_clk (IN)
+                         net (fo=0)                   0.000    10.000    oled_ctrl_clk
+    Y9                   IBUF (Prop_ibuf_I_O)         1.420    11.420 r  oled_ctrl_clk_IBUF_inst/O
+                         net (fo=1, routed)           1.972    13.392    oled_ctrl_clk_IBUF
+    BUFGCTRL_X0Y0        BUFG (Prop_bufg_I_O)         0.091    13.483 r  oled_ctrl_clk_IBUF_BUFG_inst/O
+                         net (fo=195, routed)         1.542    15.024    m_OLEDCtrl/oled_ctrl_clk_IBUF_BUFG
+    SLICE_X84Y66         FDRE                                         r  m_OLEDCtrl/temp_write_ascii_reg[6]/C
+                         clock pessimism              0.430    15.454    
+                         clock uncertainty           -0.035    15.419    
+    SLICE_X84Y66         FDRE (Setup_fdre_C_D)        0.029    15.448    m_OLEDCtrl/temp_write_ascii_reg[6]
+  -------------------------------------------------------------------
+                         required time                         15.448    
+                         arrival time                         -11.101    
+  -------------------------------------------------------------------
+                         slack                                  4.347    
+
+
+
+
