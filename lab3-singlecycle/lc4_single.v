@@ -68,6 +68,63 @@ module lc4_processor
     * TODO: INSERT YOUR CODE HERE *
     *******************************/
 
+    
+
+      /*
+         Output: rs and rt values
+         TODO: 
+            [] Figure out if you're plugging in correct 
+               input and output wires
+               //re?
+      */
+
+      wire [2:0] r1_sel, r2_sel, w_sel;
+      wire r1_re, r2_re, reg_we, nzp_we, pc_plus_1_select;
+      wire is_load, is_store, is_branch, is_control_insn;
+
+      lc4_decoder decoder(.insn(i_cur_insn),         // instruction
+                   .r1sel(r1_sel),              // rs
+                   .r1re(r1_re),               // does this instruction read from rs?
+                   .r2sel(r2_sel),              // rt
+                   .r2re(r2_re),               // does this instruction read from rt?
+                   .wsel(w_sel),               // rd
+                   .regfile_we(reg_we),         // does this instruction write to rd?
+                   .nzp_we(nzp_we),             // does this instruction write the NZP bits?
+                   .select_pc_plus_one(pc_plus_1_select), // write PC+1 to the regfile?
+                   .is_load(is_load),            // is this a load instruction?
+                   .is_store(is_store),           // is this a store instruction?
+                   .is_branch(is_branch),          // is this a branch instruction?
+                   .is_control_insn(is_control_insn)     // is this a control instruction (JSR, JSRR, RTI, JMPR, JMP, TRAP)?
+                   );
+
+      wire [15:0] rs, rt, rd;
+
+      lc4_regfile regfile( 
+         .clk(clk),
+         .gwe(gwe),
+         .rst(rst),
+         .i_rs(r1_sel),      // rs selector √
+         .o_rs_data(rs), // rs contents √
+         .i_rt(r2_sel),      // rt selector √
+         .o_rt_data(rt), // rt contents √
+         .i_rd(w_sel),      // rd selector √
+         .i_wdata(rd),   // data to write √
+         .i_rd_we(reg_we)    // write enable √
+      );
+
+      lc4_alu alu(.i_insn(i_cur_insn),
+               .i_pc(o_cur_pc),
+               .i_r1data(rs),
+               .i_r2data(rt),
+               .o_result(rd));
+
+      //data mem -> see if we can just skip it
+
+      //nzp
+
+      //upgrade pc
+
+
 
 
    /* Add $display(...) calls in the always block below to

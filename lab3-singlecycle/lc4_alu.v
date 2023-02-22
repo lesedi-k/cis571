@@ -151,5 +151,4 @@ module lc4_alu(input  wire [15:0] i_insn,
                   16'd0;
       
       
-
 endmodule

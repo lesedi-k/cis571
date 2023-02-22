@@ -12,6 +12,12 @@
 // Prevent implicit wire declaration
 `default_nettype none
 
+`include "lc4_alu.v"
+`include "lc4_decoder.v"
+`include "lc4_divider.v"
+`include "lc4_regfile.v"
+
+
 module lc4_regfile #(parameter n = 16)
    (input  wire         clk,
     input  wire         gwe,
