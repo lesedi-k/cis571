@@ -68,6 +68,79 @@ module lc4_processor
     * TODO: INSERT YOUR CODE HERE *
     *******************************/
 
+   assign test_cur_pc = pc;
+
+   assign test_cur_insn = i_cur_insn; //HERE
+
+   wire [2:0] r1_sel, r2_sel, w_sel;
+   wire r1_re, r2_re, reg_we, nzp_we, pc_plus_1_select;
+   wire is_load, is_store, is_branch, is_control_insn;
+
+   lc4_decoder decode(
+         .insn(i_cur_insn),         // instruction
+         .r1sel(r1_sel),              // rs
+         .r1re(r1_re),               // does this instruction read from rs?
+         .r2sel(r2_sel),              // rt
+         .r2re(r2_re),               // does this instruction read from rt?
+         .wsel(w_sel),               // rd
+         .regfile_we(reg_we),         // does this instruction write to rd?
+         .nzp_we(nzp_we),             // does this instruction write the NZP bits?
+         .select_pc_plus_one(pc_plus_1_select), // write PC+1 to the regfile?
+         .is_load(is_load),            // is this a load instruction?
+         .is_store(is_store),           // is this a store instruction?
+         .is_branch(is_branch),          // is this a branch instruction?
+         .is_control_insn(is_control_insn)     // is this a control instruction (JSR, JSRR, RTI, JMPR, JMP, TRAP)?
+      );
+
+   //assign to test values
+   assign test_regfile_we = reg_we;
+   assign test_regfile_wsel = w_sel;
+   assign test_nzp_we = nzp_we;
+   assign test_dmem_we = is_store;
+
+   wire [15:0] rs, rt, rd;
+
+   lc4_regfile #(16) regfile( 
+      .clk(clk),
+      .gwe(gwe),
+      .rst(rst),
+      .i_rs(r1_sel),      // rs selector √
+      .o_rs_data(rs), // rs contents √
+      .i_rt(r2_sel),      // rt selector √
+      .o_rt_data(rt), // rt contents √
+      .i_rd(w_sel),      // rd selector √
+      .i_wdata(rd),   // data to write √
+      .i_rd_we(reg_we)    // write enable √
+   );
+
+   lc4_alu alu(
+      .i_insn(i_cur_insn),
+      .i_pc(pc),
+      .i_r1data(rs),
+      .i_r2data(rt),
+      .o_result(rd)
+   );
+
+   assign test_regfile_data = rd;
+      
+   wire out;
+   wire [2:0] nzp_bits;
+
+   nzp nzp(
+      .nzp_we(nzp_we),
+      .data(rd),
+      .insn(i_cur_insn),
+      .out(out),
+      .nzp_bits(nzp_bits)
+   );
+
+   assign test_nzp_new_bits = nzp_bits;
+
+
+   assign next_pc = pc + 1;
+
+   
+
 
 
    /* Add $display(...) calls in the always block below to
@@ -86,7 +159,7 @@ module lc4_processor
     */
 `ifndef NDEBUG
    always @(posedge gwe) begin
-      // $display("%d %h %h %h %h %h", $time, f_pc, d_pc, e_pc, m_pc, test_cur_pc);
+      //$display("%d %h %h %h %h %h", $time, f_pc, d_pc, e_pc, m_pc, test_cur_pc);
       // if (o_dmem_we)
       //   $display("%d STORE %h <= %h", $time, o_dmem_addr, o_dmem_towrite);
 
@@ -128,7 +201,28 @@ module lc4_processor
       // The Objects pane will update to display the wires
       // in that module.
 
-      // $display();
+      //$display();
    end
 `endif
+endmodule
+
+
+module nzp(
+   input wire nzp_we,
+   input wire [15:0]  data,
+   input wire [15:0] insn,
+   output wire out,
+   output wire [2:0] nzp_bits);
+
+   assign nzp_bits[2] = (data < 0) ? 1 : 0;
+   assign nzp_bits[1] = (data == 0) ? 1 : 0;
+   assign nzp_bits[0] = (data > 0) ? 1 : 0;
+
+   //store in register
+   //reg [2:0] nzp;
+   //assign nzp = nzp_bits;
+
+   //if (nzp_we) 
+   assign out = insn[11:9];
+
 endmodule
