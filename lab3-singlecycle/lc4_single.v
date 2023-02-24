@@ -67,6 +67,10 @@ module lc4_processor
    /*******************************
     * TODO: INSERT YOUR CODE HERE *
     *******************************/
+   assign o_cur_pc = pc;
+
+    assign o_dmem_addr = 0;
+    assign o_dmem_towrite = 0;
 
    wire [2:0] r1_sel, r2_sel, w_sel;
    wire r1_re, r2_re, reg_we, nzp_we, pc_plus_1_select;
@@ -120,8 +124,12 @@ module lc4_processor
       .out(out),
       .nzp_bits(nzp_bits)
    );
+   
+   //TODO: Update for branching and other cinsiderations
+   assign next_pc = pc + 1;
 
-   assign o_cur_pc = pc;
+
+   //test plugins
    assign test_cur_pc = pc;
    assign test_cur_insn = i_cur_insn;
    assign test_regfile_data = rd;   
@@ -131,11 +139,9 @@ module lc4_processor
    assign test_nzp_we = nzp_we;
    assign test_dmem_we = o_dmem_we;
    assign test_nzp_new_bits = nzp_bits;
-   
-   assign next_pc = pc + 1;
 
-   
-
+   assign test_dmem_addr = o_dmem_addr;
+   assign test_dmem_data = i_cur_dmem_data;
 
 
    /* Add $display(...) calls in the always block below to
@@ -209,15 +215,15 @@ module nzp(
    output wire out,
    output wire [2:0] nzp_bits);
 
-   assign nzp_bits = (data < 0) ? 1 : 
+   assign nzp_bits = (data[15] == 1) ? 4 : 
    (data == 0) ? 2 : 
-   (data > 0) ? 4 : 0;
+   (data > 0) ? 1 : 0;
 
    //store in register
    //reg [2:0] nzp;
    //assign nzp = nzp_bits;
 
-   //if (nzp_we) 
-   assign out = insn[11:9];
+   //if (nzp_we)
+   assign out = (insn[11:9] == nzp_bits) ? 1 : 0;
 
 endmodule
