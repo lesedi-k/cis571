@@ -142,14 +142,14 @@ module lc4_processor
    assign dmem_out = (o_dmem_we) ? rt : i_cur_dmem_data;
    
    assign dmem_mux_out = (is_load) ? dmem_out:
-                        (pc_plus_1_select) ? pc + 1:
+                        (pc_plus_1_select) ? pc_inc:
                         alu_out;
    
 
-   //TODO: Update for branching and other cinsiderations
+   // branching
    wire [15:0] pc_inc;
 
-   assign pc_inc = pc + 1;
+   cla16 pc_incr (.a(pc), .b(16'd0), .cin(1'b1), .sum(pc_inc));
 
    lc4_branch branch(
       .nzp_reg_out(nzp_reg_out),
@@ -160,9 +160,6 @@ module lc4_processor
       .is_branch(is_branch),
       .next_pc(next_pc)
    );
-
-
-   // assign next_pc = pc_inc;
 
 
    //test plugins
@@ -262,21 +259,6 @@ module nzp(
    assign out = (insn[11:9] == nzp_bits) ? 1 : 0;
 
 endmodule
-
-
-// module lc4_branch(
-//    input wire [2:0] nzp_bits,
-//    input wire [2:0] nzp_we,
-//    input wire [15:0] pc,
-//    input wire [15:0] next_pc,
-//    input wire [15:0] cur_insn),
-//    input wire clk;
-
-//    wire nzp_reg_out;
-
-//    Nbit_reg #(3, 3'd0) (.in(nzp_bits), .out(nzp_reg_out), .clk(clk), .we(nzp_we), )
-
-// endmodule
 
 
 module lc4_branch(

@@ -1,8 +1,8 @@
 Copyright 1986-2020 Xilinx, Inc. All Rights Reserved.
 ------------------------------------------------------------------------------------
 | Tool Version : Vivado v.2020.2 (lin64) Build 3064766 Wed Nov 18 09:12:47 MST 2020
-| Date         : Thu Feb 23 21:29:24 2023
-| Host         : big16.seas.upenn.edu running 64-bit openSUSE Leap 15.4
+| Date         : Fri Mar  3 08:15:02 2023
+| Host         : big21.seas.upenn.edu running 64-bit openSUSE Leap 15.4
 | Command      : report_clocks -file ./output/post_route_clocks_report.txt
 | Design       : lc4_system
 | Device       : 7z020-clg484
@@ -24,6 +24,7 @@ Attributes
 Clock                               Period(ns)  Waveform(ns)     Attributes  Sources
 CLOCK_100MHz                        10.000      {0.000 5.000}    P           {CLOCK_100MHz}
 clk_processor_design_1_clk_wiz_0_0  64.000      {0.000 32.000}   P,G,A       {mmcm0/mmcm_adv_inst/CLKOUT0}
+clk_vga_design_1_clk_wiz_0_0        40.000      {0.000 20.000}   P,G,A       {mmcm0/mmcm_adv_inst/CLKOUT1}
 clk_vga_inv_design_1_clk_wiz_0_0    40.000      {20.000 40.000}  P,G,A       {mmcm0/mmcm_adv_inst/CLKOUT1B}
 clkfbout_design_1_clk_wiz_0_0       10.000      {0.000 5.000}    P,G,A       {mmcm0/mmcm_adv_inst/CLKFBOUT}
 
@@ -38,6 +39,13 @@ Master Clock        : CLOCK_100MHz
 Edges               : {1 2 3}
 Edge Shifts(ns)     : {0.000 27.000 54.000}
 Generated Sources   : {mmcm0/mmcm_adv_inst/CLKOUT0}
+
+Generated Clock     : clk_vga_design_1_clk_wiz_0_0
+Master Source       : mmcm0/mmcm_adv_inst/CLKIN1
+Master Clock        : CLOCK_100MHz
+Edges               : {1 2 3}
+Edge Shifts(ns)     : {0.000 15.000 30.000}
+Generated Sources   : {mmcm0/mmcm_adv_inst/CLKOUT1}
 
 Generated Clock     : clk_vga_inv_design_1_clk_wiz_0_0
 Master Source       : mmcm0/mmcm_adv_inst/CLKIN1
