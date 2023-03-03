@@ -69,9 +69,6 @@ module lc4_processor
     *******************************/
    assign o_cur_pc = pc;
 
-    assign o_dmem_addr = 0;
-    assign o_dmem_towrite = 0;
-
    wire [2:0] r1_sel, r2_sel, w_sel;
    wire r1_re, r2_re, reg_we, nzp_we, pc_plus_1_select;
    wire is_load, is_branch, is_control_insn;
@@ -91,7 +88,7 @@ module lc4_processor
          .is_branch(is_branch),          // is this a branch instruction?
          .is_control_insn(is_control_insn)     // is this a control instruction (JSR, JSRR, RTI, JMPR, JMP, TRAP)?
       );
-   wire [15:0] rs, rt, rd;
+   wire [15:0] rs, rt, alu_out;
 
    lc4_regfile #(16) regfile( 
       .clk(clk),
@@ -102,7 +99,7 @@ module lc4_processor
       .i_rt(r2_sel),      // rt selector √
       .o_rt_data(rt), // rt contents √
       .i_rd(w_sel),      // rd selector √
-      .i_wdata(rd),   // data to write √
+      .i_wdata(dmem_mux_out),   // data to write √
       .i_rd_we(reg_we)    // write enable √
    );
 
@@ -111,28 +108,67 @@ module lc4_processor
       .i_pc(pc),
       .i_r1data(rs),
       .i_r2data(rt),
-      .o_result(rd)
+      .o_result(alu_out)
    );
 
    wire out;
    wire [2:0] nzp_bits;
+   wire [2:0] nzp_reg_out;
 
    nzp nzp(
       .nzp_we(nzp_we),
-      .data(rd),
+      .data(dmem_mux_out),
       .insn(i_cur_insn),
       .out(out),
       .nzp_bits(nzp_bits)
    );
+
+   Nbit_reg #(3, 3'd0) nzp_reg (
+      .in(nzp_bits), 
+      .out(nzp_reg_out), 
+      .clk(clk), 
+      .we(nzp_we), 
+      .gwe(gwe), 
+      .rst(rst)
+   );
    
+
+   // Data module   
+   wire [15:0] dmem_out;
+   wire [15:0] dmem_mux_out;
+   
+   assign o_dmem_addr = (o_dmem_we | is_load)? alu_out : 0;
+   assign o_dmem_towrite = rt;
+   assign dmem_out = (o_dmem_we) ? rt : i_cur_dmem_data;
+   
+   assign dmem_mux_out = (is_load) ? dmem_out:
+                        (pc_plus_1_select) ? pc + 1:
+                        alu_out;
+   
+
    //TODO: Update for branching and other cinsiderations
-   assign next_pc = pc + 1;
+   wire [15:0] pc_inc;
+
+   assign pc_inc = pc + 1;
+
+   lc4_branch branch(
+      .nzp_reg_out(nzp_reg_out),
+      .pc(pc),
+      .pc_inc(pc_inc),
+      .cur_insn(i_cur_insn),
+      .rs(rs),
+      .is_branch(is_branch),
+      .next_pc(next_pc)
+   );
+
+
+   // assign next_pc = pc_inc;
 
 
    //test plugins
    assign test_cur_pc = pc;
    assign test_cur_insn = i_cur_insn;
-   assign test_regfile_data = rd;   
+   assign test_regfile_data = dmem_mux_out;   
 
    assign test_regfile_we = reg_we;
    assign test_regfile_wsel = w_sel;
@@ -141,8 +177,7 @@ module lc4_processor
    assign test_nzp_new_bits = nzp_bits;
 
    assign test_dmem_addr = o_dmem_addr;
-   assign test_dmem_data = i_cur_dmem_data;
-
+   assign test_dmem_data = dmem_out;
 
    /* Add $display(...) calls in the always block below to
     * print out debug information at the end of every cycle.
@@ -225,5 +260,65 @@ module nzp(
 
    //if (nzp_we)
    assign out = (insn[11:9] == nzp_bits) ? 1 : 0;
+
+endmodule
+
+
+// module lc4_branch(
+//    input wire [2:0] nzp_bits,
+//    input wire [2:0] nzp_we,
+//    input wire [15:0] pc,
+//    input wire [15:0] next_pc,
+//    input wire [15:0] cur_insn),
+//    input wire clk;
+
+//    wire nzp_reg_out;
+
+//    Nbit_reg #(3, 3'd0) (.in(nzp_bits), .out(nzp_reg_out), .clk(clk), .we(nzp_we), )
+
+// endmodule
+
+
+module lc4_branch(
+   input wire [2:0] nzp_reg_out,
+   input wire [15:0] pc,
+   input wire [15:0] pc_inc,
+   input wire [15:0] cur_insn, 
+   input wire [15:0] rs, 
+   input wire is_branch,
+   output wire [15:0] next_pc);
+
+   // br_pc wire
+   // NZP Br Test
+   wire br_test = (cur_insn[15:9] == 7'd1 && nzp_reg_out[0] == 1) ? 1 :
+      (cur_insn[15:9] == 7'd2 && nzp_reg_out[1] == 1) ? 1 :
+      (cur_insn[15:9] == 7'd3 && (nzp_reg_out[1] == 1 || nzp_reg_out[0] == 1)) ? 1 :
+      (cur_insn[15:9] == 7'd4 && (nzp_reg_out[2] == 1)) ? 1 :
+      (cur_insn[15:9] == 7'd5 && (nzp_reg_out[2] == 1 || nzp_reg_out[0] == 1)) ? 1 :
+      (cur_insn[15:9] == 7'd6 && (nzp_reg_out[2] == 1 || nzp_reg_out[1] == 1)) ? 1 :
+      (cur_insn[15:9] == 7'd7 && (nzp_reg_out != 3'd0)) ? 1 :
+      0;
+   
+   wire [15:0] br_dest_sum;
+   cla16 br_adder (.a(pc_inc), .b({{7{cur_insn[8]}}, cur_insn[8:0]}), .cin(1'b0), .sum(br_dest_sum));
+
+   wire [15:0] br_pc = br_test ? br_dest_sum : pc_inc;
+
+   // trap_pc wire
+   wire [15:0] trap_pc = {{8{1'b0}}, cur_insn[7:0] | 16'h8000};
+
+   // jmp_pc wire
+   wire [15:0] jmp_pc;
+   cla16 jmp_adder (.a(pc_inc), .b({{5{cur_insn[10]}}, cur_insn[10:0]}), .cin(1'b0), .sum(jmp_pc));
+   
+   // jsr_pc wire
+   wire [15:0] jsr_pc = (pc & 16'h8000) | (cur_insn[10:0] << 4);
+
+   assign next_pc = is_branch ? br_pc :
+      (cur_insn[15:12] == 4'b1111) ? trap_pc :
+      (cur_insn[15:11] == 5'b11000 || cur_insn[15:11] == 5'b01000) ? rs :
+      (cur_insn[15:11] == 5'b11001) ? jmp_pc:
+      (cur_insn[15:11] == 5'b01001) ? jsr_pc:
+      pc_inc;
 
 endmodule
