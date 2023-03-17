@@ -58,6 +58,7 @@ module lc4_processor
    wire [15:0] f_insn; // F current insn
 
    assign next_pc = pc + 16'b1;
+   assign f_pc_inc = next_pc;
    
 
    // Increase pc
@@ -65,7 +66,6 @@ module lc4_processor
 
    // Set F insn
    assign o_cur_pc = pc;
-   //assign f_insn = i_cur_insn;
    Nbit_reg #(16, 16'b0) f_insn_reg (.in(i_cur_insn), .out(f_insn), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
 
 
@@ -246,7 +246,7 @@ module lc4_processor
 
    //wire [15:0] m_alu_out;
    wire [15:0] m_dmem_addr;
-   wire m_dmem_we;
+   //wire m_dmem_we;
    
 
    wire [15:0] m_rs, m_rt, m_rd;
@@ -291,9 +291,9 @@ module lc4_processor
    wire [15:0] m_alu_out, m_dmem_out;
    wire [15:0] m_dmem_mux_out;
    
-   assign m_alu_out = (m_dmem_we | m_is_load)? x_rd : 0;
+   assign m_alu_out = (o_dmem_we| m_is_load)? x_rd : 0;
    assign o_dmem_towrite = x_rt;
-   assign m_dmem_out = (m_dmem_we) ? m_rt : i_cur_dmem_data;
+   assign m_dmem_out = (o_dmem_we) ? m_rt : i_cur_dmem_data;
    
    assign m_dmem_mux_out = (m_is_load) ? m_dmem_out:
                         (m_pc_plus_1_select) ? m_pc_inc:
@@ -381,7 +381,6 @@ module lc4_processor
    assign test_cur_pc = w_pc;
 
    //TO FIX
-
    assign test_nzp_new_bits = m_nzp_bits;
    assign test_regfile_data = m_rd;   
 
