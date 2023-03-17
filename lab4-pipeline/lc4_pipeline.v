@@ -149,6 +149,8 @@ module lc4_processor
    wire x_rd_we, x_nzp_we, x_pc_plus_1_select; 
    wire x_is_load, x_is_branch, x_is_control_insn;
 
+   wire [15:0] x_alu_out;
+
 
    //NZP wires
    wire x_nzp_out;
@@ -202,10 +204,12 @@ module lc4_processor
          .i_pc(x_pc),
          .i_r1data(r1_mux_out),
          .i_r2data(r2_mux_out),
-         .o_result(x_rd)
+         .o_result(x_alu_out)
       );
 
-   assign d_dmem_addr = (d_is_load | d_dmem_we ) ? x_rd : 16'b0;
+   assign x_rd = x_alu_out;
+
+   assign x_dmem_addr = (x_is_load | x_dmem_we ) ? x_alu_out : 16'b0;
 
 
    nzp nzp(
@@ -244,7 +248,7 @@ module lc4_processor
    wire [15:0] m_pc_inc;
    wire [15:0] m_insn;
 
-   //wire [15:0] m_alu_out;
+   // wire [15:0] m_alu_out;
    wire [15:0] m_dmem_addr;
    wire m_dmem_we;
    
@@ -283,15 +287,22 @@ module lc4_processor
    Nbit_reg #(3, 3'b0) m_nzp_bit_reg (.in(x_nzp_bits), .out(m_nzp_bits), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    Nbit_reg #(3, 3'b0) m_nzp_reg_out_reg (.in(x_nzp_reg_out), .out(m_nzp_reg_out), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst)); //!!! Not sure is this is redundant
 
-   Nbit_reg #(1, 1'b0) m_dmem_we_reg (.in(x_dmem_we), .out(o_dmem_we), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
-   Nbit_reg #(16, 16'h0) m_dmem_addr_reg (.in(x_dmem_addr), .out(o_dmem_addr), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
-   Nbit_reg #(16, 16'h0) m_dmem_data_reg (.in(x_dmem_val), .out(o_dmem_towrite), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   Nbit_reg #(1, 1'b0) m_dmem_we_reg (.in(x_dmem_we), .out(m_dmem_we), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   Nbit_reg #(16, 16'h0) m_dmem_addr_reg (.in(x_dmem_addr), .out(m_dmem_addr), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   // Nbit_reg #(16, 16'h0) m_dmem_data_reg (.in(x_dmem_val), .out(o_dmem_towrite), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+
+
+   Nbit_reg #(16, 16'b0) m_alu_out_reg (.in(x_alu_out), .out(m_alu_out), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+
 
    //DATA MODULE
    wire [15:0] m_alu_out, m_dmem_out;
    wire [15:0] m_dmem_mux_out;
    
-   assign m_alu_out = (m_dmem_we | m_is_load)? x_rd : 0;
+   assign o_dmem_addr = m_dmem_addr;
+   assign o_dmem_we = m_dmem_we;
+
+   // assign m_alu_out = (m_dmem_we | m_is_load)? x_rd : 0;
    assign o_dmem_towrite = x_rt;
    assign m_dmem_out = (m_dmem_we) ? m_rt : i_cur_dmem_data;
    
@@ -381,7 +392,7 @@ module lc4_processor
    //TO FIX
    assign test_cur_pc = w_pc;
    assign test_nzp_new_bits = m_nzp_bits;
-   assign test_regfile_data = x_rd;   
+   assign test_regfile_data = m_dmem_mux_out;   
 
    // assign test_cur_pc = pc;
    // assign test_cur_insn = i_cur_insn;
