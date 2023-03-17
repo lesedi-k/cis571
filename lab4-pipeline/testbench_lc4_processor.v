@@ -201,13 +201,13 @@ module test_processor;
          tests = tests + 1;
          
          // stall
-         // if (verify_stall !== test_stall) begin
-         //    if (errors <= `MAX_ERRORS_TO_DISPLAY) begin 
-         //       $display( "Error at cycle %d: stall should be %h (but was %h)", 
-         //                 num_cycles, verify_stall, test_stall);
-         //    end
-         //    errors = errors + 1;
-         // end 
+         if (verify_stall !== test_stall) begin
+            if (errors <= `MAX_ERRORS_TO_DISPLAY) begin 
+               $display( "Error at cycle %d: stall should be %h (but was %h)", 
+                         num_cycles, verify_stall, test_stall);
+            end
+            errors = errors + 1;
+         end 
 
          // count consecutive stalls
          if (test_stall !== 3'b000) begin
@@ -346,10 +346,10 @@ module test_processor;
             end
          end // non-stall cycle
 
-         if (`EXIT_AFTER_FIRST_ERROR && errors > 0) begin
-            $display("Exiting after first error..."); 
-            $finish;
-         end
+         // if (`EXIT_AFTER_FIRST_ERROR && errors > 0) begin
+         //    $display("Exiting after first error..."); 
+         //    $finish;
+         // end 
                   
       end // while ($fscanf(input_file, ...))
       if (errors > `MAX_ERRORS_TO_DISPLAY) begin
