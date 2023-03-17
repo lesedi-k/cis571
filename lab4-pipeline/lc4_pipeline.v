@@ -57,8 +57,11 @@ module lc4_processor
    wire [15:0] f_pc_inc; // pc + 1
    wire [15:0] f_insn; // F current insn
 
+   assign next_pc = pc + 16'b1;
+   
+
    // Increase pc
-   cla16 pc_incr (.a(pc), .b(16'd0), .cin(1'b1), .sum(f_pc_inc));
+   //cla16 pc_incr (.a(pc), .b(16'd0), .cin(1'b1), .sum(f_pc_inc));
 
    // Set F insn
    assign o_cur_pc = pc;
@@ -222,15 +225,17 @@ module lc4_processor
       .rst(rst)
    );
 
-   lc4_branch branch(
-      .nzp_reg_out(x_nzp_reg_out),
-      .pc(x_pc),
-      .pc_inc(x_pc_inc),
-      .cur_insn(i_cur_insn),
-      .rs(x_rs),
-      .is_branch(x_is_branch),
-      .next_pc(next_pc)
-   );
+   
+
+   // lc4_branch branch(
+   //    .nzp_reg_out(x_nzp_reg_out),
+   //    .pc(x_pc),
+   //    .pc_inc(x_pc_inc),
+   //    .cur_insn(i_cur_insn),
+   //    .rs(x_rs),
+   //    .is_branch(x_is_branch),
+   //    .next_pc(next_pc)
+   // );
 
 // ************************************* MEMORY ******************************************
 
@@ -242,6 +247,7 @@ module lc4_processor
    //wire [15:0] m_alu_out;
    wire [15:0] m_dmem_addr;
    wire m_dmem_we;
+   //wire [15:0] m_dmem_val;
 
    wire [15:0] m_rs, m_rt, m_rd;
    wire [2:0] m_r1_sel, m_r2_sel, m_rd_sel;
@@ -279,6 +285,8 @@ module lc4_processor
 
    Nbit_reg #(1, 1'b0) m_dmem_we_reg (.in(x_dmem_we), .out(o_dmem_we), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    Nbit_reg #(16, 16'h0) m_dmem_addr_reg (.in(x_dmem_addr), .out(o_dmem_addr), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   
+   //Nbit_reg #(16, 16'h0) m_dmem_data_reg (.in(x_dmem_val), .out(m_dmem_val), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    Nbit_reg #(16, 16'h0) m_dmem_data_reg (.in(x_dmem_val), .out(o_dmem_towrite), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
 
    //DATA MODULE
@@ -343,6 +351,10 @@ module lc4_processor
 
    Nbit_reg #(1, 1'b0) w_nzp_we_reg (.in(m_nzp_we), .out(w_nzp_we), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    Nbit_reg #(3, 3'b0) w_nzp_bits_reg (.in(m_nzp_bits), .out(w_nzp_bits), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+  
+   //Nbit_reg #(16, 16'h0) w_dmem_data_reg (.in(m_dmem_val), .out(o_dmem_towrite), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+
+
 
    //Nbit_reg #(1, 1'b0) w_dmem_we_reg (.in(m_dmem_we), .out(w_dmem_we), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    //Nbit_reg #(16, 16'b0) w_dmem_addr_reg (.in(m_dmem_addr), .out(w_dmem_addr), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
@@ -358,8 +370,6 @@ module lc4_processor
    assign test_stall = (m_insn == 0) ? 2 : 0;
 
    assign test_cur_insn = m_insn;
-
-
 
    assign test_regfile_we = m_rd_we;
    assign test_regfile_wsel = m_rd_sel;
@@ -459,11 +469,6 @@ module nzp(
    (data == 0) ? 2 : 
    (data > 0) ? 1 : 0;
 
-   //store in register
-   //reg [2:0] nzp;
-   //assign nzp = nzp_bits;
-
-   //if (nzp_we)
    assign out = (insn[11:9] == nzp_bits) ? 1 : 0;
 
 endmodule
