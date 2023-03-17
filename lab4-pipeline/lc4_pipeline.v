@@ -210,7 +210,7 @@ module lc4_processor
 
    nzp nzp(
       .nzp_we(x_nzp_we),
-      .data(x_dmem_addr),
+      .data(x_rd),
       .insn(x_insn),
       .out(x_nzp_out),
       .nzp_bits(x_nzp_bits)
@@ -247,7 +247,7 @@ module lc4_processor
    //wire [15:0] m_alu_out;
    wire [15:0] m_dmem_addr;
    wire m_dmem_we;
-   //wire [15:0] m_dmem_val;
+   
 
    wire [15:0] m_rs, m_rt, m_rd;
    wire [2:0] m_r1_sel, m_r2_sel, m_rd_sel;
@@ -285,8 +285,6 @@ module lc4_processor
 
    Nbit_reg #(1, 1'b0) m_dmem_we_reg (.in(x_dmem_we), .out(o_dmem_we), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    Nbit_reg #(16, 16'h0) m_dmem_addr_reg (.in(x_dmem_addr), .out(o_dmem_addr), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
-   
-   //Nbit_reg #(16, 16'h0) m_dmem_data_reg (.in(x_dmem_val), .out(m_dmem_val), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    Nbit_reg #(16, 16'h0) m_dmem_data_reg (.in(x_dmem_val), .out(o_dmem_towrite), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
 
    //DATA MODULE
