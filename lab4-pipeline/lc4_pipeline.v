@@ -378,10 +378,12 @@ module lc4_processor
    assign test_dmem_we = o_dmem_we;
    assign test_dmem_addr = o_dmem_addr;
 
-   //TO FIX
    assign test_cur_pc = w_pc;
+
+   //TO FIX
+
    assign test_nzp_new_bits = m_nzp_bits;
-   assign test_regfile_data = x_rd;   
+   assign test_regfile_data = m_rd;   
 
    // assign test_cur_pc = pc;
    // assign test_cur_insn = i_cur_insn;
@@ -463,6 +465,7 @@ module nzp(
    output wire out,
    output wire [2:0] nzp_bits);
 
+   
    assign nzp_bits = (data[15] == 1) ? 4 : 
    (data == 0) ? 2 : 
    (data > 0) ? 1 : 0;
