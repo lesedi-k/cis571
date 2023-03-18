@@ -5,10 +5,10 @@
 `define EXIT_AFTER_FIRST_ERROR 1
 
 // change this to adjust how many errors are printed out
-`define MAX_ERRORS_TO_DISPLAY 15
+`define MAX_ERRORS_TO_DISPLAY 40
 
 // set this to 1 to create a waveform file for easier debugging
-`define GENERATE_VCD 0
+`define GENERATE_VCD 1
 
 
 `define EOF 32'hFFFF_FFFF
