@@ -57,20 +57,21 @@ module lc4_processor
    wire [15:0] f_pc_inc; // pc + 1
    wire [15:0] f_insn; // F current insn
 
-   
 
    // Increase pc
    cla16 pc_incr (.a(pc), .b(16'd0), .cin(1'b1), .sum(f_pc_inc));
 
    // TEMP: Assign next pc
-   assign next_pc = f_pc_inc;
-
+   assign next_pc = d_load_use_stall ? pc : f_pc_inc;
 
    // Set F insn
    assign o_cur_pc = pc;
    assign f_insn = i_cur_insn;
 
-
+   // Stall check
+   wire [15:0] f_sc_pc = d_load_use_stall ? d_pc: pc;
+   wire [15:0] f_sc_pc_inc = d_load_use_stall ? d_pc_inc: f_pc_inc;
+   wire [15:0] f_sc_insn = d_load_use_stall ? d_insn : f_insn;
 
 // ******************************************DECODE***************************************************
    
@@ -91,12 +92,15 @@ module lc4_processor
    // Data Mem signals
    wire d_dmem_we;
 
+   // Stall signal
+   wire d_load_use_stall;
+
    // D phase Registers
    // (!!!! Not sure if default values are set correctly !!!!)
    // (!!!! Load-to-use stalling not implemented yet !!!!)
-   Nbit_reg #(16, 16'h8200) d_pc_reg (.in(pc), .out(d_pc), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
-   Nbit_reg #(16, 16'h8201) d_pc_inc_reg (.in(f_pc_inc), .out(d_pc_inc), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
-   Nbit_reg #(16, 16'b0) d_insn_reg (.in(f_insn), .out(d_insn), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   Nbit_reg #(16, 16'h8200) d_pc_reg (.in(f_sc_pc), .out(d_pc), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   Nbit_reg #(16, 16'h8201) d_pc_inc_reg (.in(f_sc_pc_inc), .out(d_pc_inc), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   Nbit_reg #(16, 16'b0) d_insn_reg (.in(f_sc_insn), .out(d_insn), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
 
 
    // Decoder
@@ -130,10 +134,30 @@ module lc4_processor
       .i_rd_we(w_rd_we)    // write enable √
    );
 
-
+   // Register write-read bypass
    assign d_rs = ((w_rd_sel == d_r1_sel) && (w_rd_we)) ? w_dmem_mux_out : d_rs_prelim;
-
    assign d_rt = ((w_rd_sel == d_r2_sel) && (w_rd_we)) ? w_dmem_mux_out : d_rt_prelim;
+
+   // Stall check
+   assign d_load_use_stall = (x_is_load) && (d_r1_re && d_r1_sel == x_rd_sel|| ((d_r2_re && d_r2_sel == x_rd_sel) && (!d_dmem_we)));
+
+   // Post stall check wires
+
+   // wire [15:0] d_sc_pc = d_load_use_stall ? 16'b0 : d_pc;
+   // wire [15:0] d_sc_pc_inc;
+   // wire [15:0] d_sc_insn = d_load_use_stall ? 16'b0 : d_insn;
+   
+   wire d_sc_rd_we = d_rd_we;
+   wire d_sc_nzp_we = d_nzp_we;
+   wire d_sc_pc_plus_1_select = d_pc_plus_1_select;
+
+   wire d_sc_is_load = d_load_use_stall ? 1'b0 : d_is_load;
+   wire d_sc_is_branch = d_load_use_stall ? 1'b0 : d_is_branch;
+   wire d_sc_is_control_insn = d_load_use_stall ? 1'b0 : d_is_control_insn;
+
+
+   wire d_sc_dmem_we = d_load_use_stall ? 1'b0 : d_dmem_we;
+
 
 // ************************************* EXECUTE ******************************************
 
@@ -151,16 +175,23 @@ module lc4_processor
    wire x_rd_we, x_nzp_we, x_pc_plus_1_select; 
    wire x_is_load, x_is_branch, x_is_control_insn;
 
+   wire x_r1_re;
+   wire x_r2_re;
+
    wire [15:0] x_alu_out;
 
 
-   //NZP wires
+   // NZP wires
    wire x_nzp_out;
    wire [2:0] x_nzp_bits;
    wire [2:0] x_nzp_reg_out;
 
-   //R1 mux for WX and MX bypassing
+   // R1 mux for WX and MX bypassing
    wire [15:0] x_r1_bp_out, x_r2_bp_out;
+
+   // stall sig
+
+   wire x_load_use_stall;
 
    // Storing D values to X Phase Registers
    Nbit_reg #(16, 16'h8200) x_pc_reg (.in(d_pc), .out(x_pc), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
@@ -173,25 +204,31 @@ module lc4_processor
    Nbit_reg #(3, 3'b0) x_r1_sel_reg (.in(d_r1_sel), .out(x_r1_sel), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    Nbit_reg #(3, 3'b0) x_r2_sel_reg (.in(d_r2_sel), .out(x_r2_sel), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    Nbit_reg #(3, 3'b0) x_rd_sel_reg (.in(d_rd_sel), .out(x_rd_sel), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
-   Nbit_reg #(1, 1'b0) x_rd_we_reg (.in(d_rd_we), .out(x_rd_we), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   Nbit_reg #(1, 1'b0) x_rd_we_reg (.in(d_sc_rd_we), .out(x_rd_we), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
 
 
-   Nbit_reg #(1, 1'b0) x_pc_plus_1_select_reg (.in(d_pc_plus_1_select), .out(x_pc_plus_1_select), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
-   Nbit_reg #(1, 1'b0) x_is_load_reg (.in(d_is_load), .out(x_is_load), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
-   Nbit_reg #(1, 1'b0) x_is_branch_reg (.in(d_is_branch), .out(x_is_branch), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
-   Nbit_reg #(1, 1'b0) x_is_control_reg (.in(d_is_control_insn), .out(x_is_control_insn), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   Nbit_reg #(1, 1'b0) x_pc_plus_1_select_reg (.in(d_sc_pc_plus_1_select), .out(x_pc_plus_1_select), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   Nbit_reg #(1, 1'b0) x_is_load_reg (.in(d_sc_is_load), .out(x_is_load), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   Nbit_reg #(1, 1'b0) x_is_branch_reg (.in(d_sc_is_branch), .out(x_is_branch), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   Nbit_reg #(1, 1'b0) x_is_control_reg (.in(d_sc_is_control_insn), .out(x_is_control_insn), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
 
-   Nbit_reg #(1, 1'b0) x_nzp_we_reg (.in(d_nzp_we), .out(x_nzp_we), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   Nbit_reg #(1, 1'b0) x_nzp_we_reg (.in(d_sc_nzp_we), .out(x_nzp_we), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
  
-   Nbit_reg #(1, 1'b0) x_dmem_we_reg (.in(d_dmem_we), .out(x_dmem_we), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   Nbit_reg #(1, 1'b0) x_dmem_we_reg (.in(d_sc_dmem_we), .out(x_dmem_we), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+
+   Nbit_reg #(1, 1'b0) x_stall_reg (.in(d_load_use_stall), .out(x_load_use_stall), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+
+   Nbit_reg #(1, 1'b0) x_r1_re_reg (.in(d_r1_re), .out(x_r1_re), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   Nbit_reg #(1, 1'b0) x_r2_re_reg (.in(d_r2_re), .out(x_r2_re), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+
 
    //mx, wx
-   assign x_r1_bp_out = ((x_r1_sel == m_rd_sel) && m_rd_we) ? m_alu_out :
-                        ((x_r1_sel == w_rd_sel) && w_rd_we) ? w_dmem_mux_out :
+   assign x_r1_bp_out = ((x_r1_sel == m_rd_sel) && m_rd_we && !m_load_use_stall) ? m_alu_out :
+                        ((x_r1_sel == w_rd_sel) && w_rd_we && !w_load_use_stall) ? w_dmem_mux_out :
                         x_rs;
 
-   assign x_r2_bp_out = ((x_r2_sel == m_rd_sel) && m_rd_we) ? m_alu_out :
-                        ((x_r2_sel == w_rd_sel) && w_rd_we) ? w_dmem_mux_out :
+   assign x_r2_bp_out = ((x_r2_sel == m_rd_sel) && m_rd_we && !m_load_use_stall) ? m_alu_out :
+                        ((x_r2_sel == w_rd_sel) && w_rd_we && !w_load_use_stall) ? w_dmem_mux_out :
                         x_rt;
 
 
@@ -248,6 +285,9 @@ module lc4_processor
    wire [2:0] m_r1_sel, m_r2_sel, m_rd_sel;
    wire m_rd_we;
 
+   wire m_r1_re;
+   wire m_r2_re;
+
    wire m_pc_plus_1_select;
    wire m_is_load;
    
@@ -255,7 +295,7 @@ module lc4_processor
    wire [2:0] m_nzp_bits;
    wire [2:0] m_nzp_reg_out;
 
-
+   wire m_load_use_stall;
 
    Nbit_reg #(16, 16'h8200) m_pc_reg (.in(x_pc), .out(m_pc), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    Nbit_reg #(16, 16'h8201) m_pc_inc_reg (.in(x_pc_inc), .out(m_pc_inc), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
@@ -266,7 +306,7 @@ module lc4_processor
 
 
    Nbit_reg #(16, 16'b0) m_rs_reg (.in(x_rs), .out(m_rs), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
-   Nbit_reg #(16, 16'b0) m_rt_reg (.in(x_rt), .out(m_rt), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst)); 
+   Nbit_reg #(16, 16'b0) m_rt_reg (.in(x_r2_bp_out), .out(m_rt), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst)); 
 
    Nbit_reg #(3, 3'b0) m_r1_sel_reg (.in(x_r1_sel), .out(m_r1_sel), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    Nbit_reg #(3, 3'b0) m_r2_sel_reg (.in(x_r2_sel), .out(m_r2_sel), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
@@ -281,6 +321,16 @@ module lc4_processor
 
    Nbit_reg #(16, 16'b0) m_alu_out_reg (.in(x_alu_out), .out(m_alu_out), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
 
+   Nbit_reg #(1, 1'b0) m_stall_reg (.in(x_load_use_stall), .out(m_load_use_stall), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+
+   Nbit_reg #(1, 1'b0) m_r1_re_reg (.in(x_r1_re), .out(m_r1_re), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+   Nbit_reg #(1, 1'b0) m_r2_re_reg (.in(x_r2_re), .out(m_r2_re), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+
+
+   // wm bypass
+   wire [15:0] m_wm_bp_out = (m_dmem_we && w_rd_sel == m_r2_sel 
+            && w_rd_we && m_r2_re) ? w_dmem_mux_out : m_rt;
+
 
    //DATA MODULE
    wire [15:0] m_alu_out, m_dmem_out;
@@ -293,10 +343,12 @@ module lc4_processor
    assign o_dmem_we = m_dmem_we;
 
 
-   assign o_dmem_towrite = x_rt;
-   assign m_dmem_out = (m_dmem_we) ? x_rt : i_cur_dmem_data;
+   assign o_dmem_towrite = m_wm_bp_out;
+   wire [15:0] m_dmem_data = i_cur_dmem_data;
+   // assign m_dmem_out = (m_dmem_we) ? m_rt : m_dmem_data;
+   assign m_dmem_out = m_dmem_data;
    
-   
+
 // ************************************* WRITEBACK ******************************************
    
    // Relevant wires
@@ -320,7 +372,9 @@ module lc4_processor
    //TODO: Make wires for this
    wire w_dmem_we;
    wire [15:0] w_dmem_addr;
+   wire [15:0] w_dmem_towrite;
    
+   wire w_load_use_stall;
 
    // W Phase Registers
    Nbit_reg #(16, 16'h8200) w_pc_reg (.in(m_pc), .out(w_pc), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
@@ -334,6 +388,7 @@ module lc4_processor
 
    Nbit_reg #(1, 1'b0) w_pc_plus_1_select_reg (.in(m_pc_plus_1_select), .out(w_pc_plus_1_select), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    Nbit_reg #(1, 1'b0) w_is_load_reg (.in(m_is_load), .out(w_is_load), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+
 
    Nbit_reg #(16, 16'b0) w_rs_reg (.in(m_rs), .out(w_rs), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    Nbit_reg #(16, 16'b0) w_rt_reg (.in(m_rt), .out(w_rt), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst)); 
@@ -350,6 +405,10 @@ module lc4_processor
    Nbit_reg #(1, 1'b0) w_dmem_we_reg (.in(m_dmem_we), .out(w_dmem_we), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    Nbit_reg #(16, 16'b0) w_dmem_addr_reg (.in(m_dmem_addr), .out(w_dmem_addr), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    
+   Nbit_reg #(1, 1'd0) w_stall_reg (.in(m_load_use_stall), .out(w_load_use_stall), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+
+   Nbit_reg #(16, 16'b0) w_dmem_towrite_reg (.in(m_wm_bp_out), .out(w_dmem_towrite), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
+
 
    assign w_dmem_mux_out = (w_is_load) ? w_dmem_out:
                         (w_pc_plus_1_select) ? w_pc_inc:
@@ -358,7 +417,9 @@ module lc4_processor
 
 // ************************************* TESTING WIRES ******************************************
 
-   assign test_stall = (w_insn == 16'b0) ? 2'd2 : 2'd0;
+   assign test_stall = (w_insn == 16'b0) ? 2'd2 : 
+                        (w_load_use_stall) ? 2'd3 :
+                        2'd0;
 
    assign test_cur_insn = w_insn;
 
@@ -367,7 +428,7 @@ module lc4_processor
 
    assign test_nzp_we = w_nzp_we;
 
-   assign test_dmem_data = w_dmem_out;
+   assign test_dmem_data = w_dmem_we ? w_dmem_towrite : w_dmem_out;
    assign test_dmem_we = w_dmem_we;
    assign test_dmem_addr = w_dmem_addr;
 
