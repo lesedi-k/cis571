@@ -96,8 +96,6 @@ module lc4_processor
    wire d_load_use_stall;
 
    // D phase Registers
-   // (!!!! Not sure if default values are set correctly !!!!)
-   // (!!!! Load-to-use stalling not implemented yet !!!!)
    Nbit_reg #(16, 16'h8200) d_pc_reg (.in(f_sc_pc), .out(d_pc), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    Nbit_reg #(16, 16'h8201) d_pc_inc_reg (.in(f_sc_pc_inc), .out(d_pc_inc), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
    Nbit_reg #(16, 16'b0) d_insn_reg (.in(f_sc_insn), .out(d_insn), .clk(clk), .we(1'b1), .gwe(gwe), .rst(rst));
@@ -142,11 +140,6 @@ module lc4_processor
    assign d_load_use_stall = (x_is_load) && (d_r1_re && d_r1_sel == x_rd_sel|| ((d_r2_re && d_r2_sel == x_rd_sel) && (!d_dmem_we)));
 
    // Post stall check wires
-
-   // wire [15:0] d_sc_pc = d_load_use_stall ? 16'b0 : d_pc;
-   // wire [15:0] d_sc_pc_inc;
-   // wire [15:0] d_sc_insn = d_load_use_stall ? 16'b0 : d_insn;
-   
    wire d_sc_rd_we = d_rd_we;
    wire d_sc_nzp_we = d_nzp_we;
    wire d_sc_pc_plus_1_select = d_pc_plus_1_select;
@@ -154,7 +147,6 @@ module lc4_processor
    wire d_sc_is_load = d_load_use_stall ? 1'b0 : d_is_load;
    wire d_sc_is_branch = d_load_use_stall ? 1'b0 : d_is_branch;
    wire d_sc_is_control_insn = d_load_use_stall ? 1'b0 : d_is_control_insn;
-
 
    wire d_sc_dmem_we = d_load_use_stall ? 1'b0 : d_dmem_we;
 
@@ -190,7 +182,6 @@ module lc4_processor
    wire [15:0] x_r1_bp_out, x_r2_bp_out;
 
    // stall sig
-
    wire x_load_use_stall;
 
    // Storing D values to X Phase Registers
@@ -241,7 +232,6 @@ module lc4_processor
          .o_result(x_alu_out)
       );
 
-
    nzp nzp(
       .nzp_we(x_nzp_we),
       .data(x_alu_out),
@@ -259,16 +249,7 @@ module lc4_processor
       .rst(rst)
    );
 
-   
-   // lc4_branch branch(
-   //    .nzp_reg_out(x_nzp_reg_out),
-   //    .pc(x_pc),
-   //    .pc_inc(x_pc_inc),
-   //    .cur_insn(x_insn),
-   //    .rs(x_rs),
-   //    .is_branch(x_is_branch),
-   //    .next_pc(next_pc)
-   // );
+   // Branching goes here I believe
 
 // ************************************* MEMORY ******************************************
 
@@ -278,9 +259,9 @@ module lc4_processor
    wire [15:0] m_insn;
 
    wire [15:0] m_dmem_addr;
+   wire [15:0] m_dmem_data;
    wire m_dmem_we;
    
-
    wire [15:0] m_rs, m_rt;
    wire [2:0] m_r1_sel, m_r2_sel, m_rd_sel;
    wire m_rd_we;
@@ -331,21 +312,17 @@ module lc4_processor
    wire [15:0] m_wm_bp_out = (m_dmem_we && w_rd_sel == m_r2_sel 
             && w_rd_we && m_r2_re) ? w_dmem_mux_out : m_rt;
 
-
    //DATA MODULE
    wire [15:0] m_alu_out, m_dmem_out;
    wire [15:0] m_dmem_mux_out;
 
    assign m_dmem_addr = (m_is_load | m_dmem_we ) ? m_alu_out : 16'b0;
 
-   
    assign o_dmem_addr = m_dmem_addr;
    assign o_dmem_we = m_dmem_we;
 
-
    assign o_dmem_towrite = m_wm_bp_out;
-   wire [15:0] m_dmem_data = i_cur_dmem_data;
-   // assign m_dmem_out = (m_dmem_we) ? m_rt : m_dmem_data;
+   assign m_dmem_data = i_cur_dmem_data;
    assign m_dmem_out = m_dmem_data;
    
 
@@ -435,8 +412,6 @@ module lc4_processor
    assign test_cur_pc = w_pc;
    assign test_nzp_new_bits = w_nzp_bits;
    assign test_regfile_data = w_dmem_mux_out;
-
-
 
 
    /* Add $display(...) calls in the always block below to
