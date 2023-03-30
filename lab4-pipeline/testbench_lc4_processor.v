@@ -2,13 +2,13 @@
 `default_nettype none
 
 // set this to 1 to exit after the first failure
-`define EXIT_AFTER_FIRST_ERROR 1
+`define EXIT_AFTER_FIRST_ERROR 0
 
 // change this to adjust how many errors are printed out
-`define MAX_ERRORS_TO_DISPLAY 40
+`define MAX_ERRORS_TO_DISPLAY 30
 
 // set this to 1 to create a waveform file for easier debugging
-`define GENERATE_VCD 1
+`define GENERATE_VCD 0
 
 
 `define EOF 32'hFFFF_FFFF
@@ -199,8 +199,14 @@ module test_processor;
 	 #40;
 
          tests = tests + 1;
+
+         // if (errors <= `MAX_ERRORS_TO_DISPLAY && num_cycles >= 0) begin 
+         //       $write("%d:", num_cycles);
+         //       pinstr(test_insn);
+         //       $display("");
+         //    end
          
-         // stall
+       // stall
          if (verify_stall !== test_stall) begin
             if (errors <= `MAX_ERRORS_TO_DISPLAY) begin 
                $display( "Error at cycle %d: stall should be %h (but was %h)", 
@@ -344,9 +350,10 @@ module test_processor;
                end
                errors = errors + 1;
             end
-         end // non-stall cycle
+          end // non-stall cycle
 
-         // if (`EXIT_AFTER_FIRST_ERROR && errors > 0) begin
+         //if (`EXIT_AFTER_FIRST_ERROR &&  errors > 0) begin
+         // if (errors > 20) begin
          //    $display("Exiting after first error..."); 
          //    $finish;
          // end 

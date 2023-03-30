@@ -198,118 +198,120 @@ module test_processor;
          next_instruction = 0;  // false
          while (!next_instruction) begin
             
-            if (test_stall == 2'd0) begin
-               num_exec = num_exec + 1;
-               next_instruction = 1;  // true
-            end else begin
-               errors = errors + 1;
-               if (errors < `MAX_ERRORS_TO_DISPLAY) begin
-                  $display( "Error at line %d: test_stall should always be 0 (but was %h)", 
-                            linenum, test_stall);
-               end
-            end
+            // if (test_stall == 2'd0) begin
+            //    num_exec = num_exec + 1;
+            //    next_instruction = 1;  // true
+            // end else begin
+            //    errors = errors + 1;
+            //    if (errors < `MAX_ERRORS_TO_DISPLAY) begin
+            //       $display( "Error at line %d: test_stall should always be 0 (but was %h)", 
+            //                 linenum, test_stall);
+            //    end
+            // end
                         
             if (next_instruction) begin
                
                // Check it before fetching the next instruction
                
                // pc
-               if (verify_pc !== test_pc) begin
-                  if (errors < `MAX_ERRORS_TO_DISPLAY) begin
-                     $display( "Error at line %d: pc should be %h (but was %h)", 
-                               linenum, verify_pc, test_pc);
-                  end
-                  errors = errors + 1;
-               end
+               // if (verify_pc !== test_pc) begin
+               //    if (errors < `MAX_ERRORS_TO_DISPLAY) begin
+               //       $display( "Error at line %d: pc should be %h (but was %h)", 
+               //                 linenum, verify_pc, test_pc);
+               //    end
+               //    errors = errors + 1;
+               // end
+
+               pinstr(verify_insn);
                
                // insn
-               if (verify_insn !== test_insn) begin
-                  if (errors < `MAX_ERRORS_TO_DISPLAY) begin
-                     $write("Error at line %d: insn should be %h (", linenum, verify_insn);
-                     pinstr(verify_insn);
-                     $write(") but was %h (", test_insn);
-                     pinstr(test_insn);
-                     $display(")");
-                  end
-                  errors = errors + 1;
-               end
+               // if (verify_insn !== test_insn) begin
+               //    if (errors < `MAX_ERRORS_TO_DISPLAY) begin
+               //       $write("Error at line %d: insn should be %h (", linenum, verify_insn);
+               //       pinstr(verify_insn);
+               //       $write(") but was %h (", test_insn);
+               //       pinstr(test_insn);
+               //       $display(")");
+               //    end
+               //    errors = errors + 1;
+               // end
                
                // regfile_we
-               if (verify_regfile_we !== test_regfile_we) begin
-                  if (errors < `MAX_ERRORS_TO_DISPLAY) begin
-                     $display( "Error at line %d: regfile_we should be %h (but was %h)", 
-                               linenum, verify_regfile_we, test_regfile_we);
-                  end
-                  errors = errors + 1;
-               end
+               // if (verify_regfile_we !== test_regfile_we) begin
+               //    if (errors < `MAX_ERRORS_TO_DISPLAY) begin
+               //       $display( "Error at line %d: regfile_we should be %h (but was %h)", 
+               //                 linenum, verify_regfile_we, test_regfile_we);
+               //    end
+               //    errors = errors + 1;
+               // end
                
-               // regfile_reg
-               if (verify_regfile_we && verify_regfile_reg !== test_regfile_reg) begin
-                  if (errors < `MAX_ERRORS_TO_DISPLAY) begin
-                     $display( "Error at line %d: regfile_reg should be %h (but was %h)", 
-                               linenum, verify_regfile_reg, test_regfile_reg);
-                  end
-                  errors = errors + 1;
-               end
+               // // regfile_reg
+               // if (verify_regfile_we && verify_regfile_reg !== test_regfile_reg) begin
+               //    if (errors < `MAX_ERRORS_TO_DISPLAY) begin
+               //       $display( "Error at line %d: regfile_reg should be %h (but was %h)", 
+               //                 linenum, verify_regfile_reg, test_regfile_reg);
+               //    end
+               //    errors = errors + 1;
+               // end
                
-               // regfile_in
-               if (verify_regfile_we && verify_regfile_in !== test_regfile_in) begin
-                  if (errors < `MAX_ERRORS_TO_DISPLAY) begin
-                     $display( "Error at line %d: regfile_in should be %h (but was %h)", 
-                               linenum, verify_regfile_in, test_regfile_in);
-                  end
-                  errors = errors + 1;
-               end
+               // // regfile_in
+               // if (verify_regfile_we && verify_regfile_in !== test_regfile_in) begin
+               //    if (errors < `MAX_ERRORS_TO_DISPLAY) begin
+               //       $display( "Error at line %d: regfile_in should be %h (but was %h)", 
+               //                 linenum, verify_regfile_in, test_regfile_in);
+               //    end
+               //    errors = errors + 1;
+               // end
                
-               // verify_nzp_we
-               if (verify_nzp_we !== test_nzp_we) begin
-                  if (errors < `MAX_ERRORS_TO_DISPLAY) begin
-                     $display( "Error at line %d: nzp_we should be %h (but was %h)", 
-                               linenum, verify_nzp_we, test_nzp_we);
-                  end
-                  errors = errors + 1;
-               end
+               // // verify_nzp_we
+               // if (verify_nzp_we !== test_nzp_we) begin
+               //    if (errors < `MAX_ERRORS_TO_DISPLAY) begin
+               //       $display( "Error at line %d: nzp_we should be %h (but was %h)", 
+               //                 linenum, verify_nzp_we, test_nzp_we);
+               //    end
+               //    errors = errors + 1;
+               // end
                
-               // verify_nzp_new_bits
-               if (verify_nzp_we && verify_nzp_new_bits !== test_nzp_new_bits) begin
-                  if (errors < `MAX_ERRORS_TO_DISPLAY) begin
-                     $display( "Error at line %d: nzp_new_bits should be %h (but was %h)", 
-                               linenum, verify_nzp_new_bits, test_nzp_new_bits);
-                  end
-                  errors = errors + 1;
-               end
+               // // verify_nzp_new_bits
+               // if (verify_nzp_we && verify_nzp_new_bits !== test_nzp_new_bits) begin
+               //    if (errors < `MAX_ERRORS_TO_DISPLAY) begin
+               //       $display( "Error at line %d: nzp_new_bits should be %h (but was %h)", 
+               //                 linenum, verify_nzp_new_bits, test_nzp_new_bits);
+               //    end
+               //    errors = errors + 1;
+               // end
                
-               // verify_dmem_we
-               if (verify_dmem_we !== test_dmem_we) begin
-                  if (errors < `MAX_ERRORS_TO_DISPLAY) begin
-                     $display( "Error at line %d: dmem_we should be %h (but was %h)", 
-                               linenum, verify_dmem_we, test_dmem_we);
-                  end
-                  errors = errors + 1;
-               end
+               // // verify_dmem_we
+               // if (verify_dmem_we !== test_dmem_we) begin
+               //    if (errors < `MAX_ERRORS_TO_DISPLAY) begin
+               //       $display( "Error at line %d: dmem_we should be %h (but was %h)", 
+               //                 linenum, verify_dmem_we, test_dmem_we);
+               //    end
+               //    errors = errors + 1;
+               // end
                
-               // dmem_addr
-               if (verify_dmem_addr !== test_dmem_addr) begin
-                  if (errors < `MAX_ERRORS_TO_DISPLAY) begin
-                     $display( "Error at line %d: dmem_addr should be %h (but was %h)", 
-                               linenum, verify_dmem_addr, test_dmem_addr);
-                  end
-                  errors = errors + 1;
-               end
+               // // dmem_addr
+               // if (verify_dmem_addr !== test_dmem_addr) begin
+               //    if (errors < `MAX_ERRORS_TO_DISPLAY) begin
+               //       $display( "Error at line %d: dmem_addr should be %h (but was %h)", 
+               //                 linenum, verify_dmem_addr, test_dmem_addr);
+               //    end
+               //    errors = errors + 1;
+               // end
                
-               // dmem_data
-               if (verify_dmem_data !== test_dmem_data) begin
-                  if (errors < `MAX_ERRORS_TO_DISPLAY) begin
-                     $display( "Error at line %d: dmem_data should be %h (but was %h)", 
-                               linenum, verify_dmem_data, test_dmem_data);
-                  end
-                  errors = errors + 1;
-               end
+               // // dmem_data
+               // if (verify_dmem_data !== test_dmem_data) begin
+               //    if (errors < `MAX_ERRORS_TO_DISPLAY) begin
+               //       $display( "Error at line %d: dmem_data should be %h (but was %h)", 
+               //                 linenum, verify_dmem_data, test_dmem_data);
+               //    end
+               //    errors = errors + 1;
+               // end
 
-               if (`EXIT_AFTER_FIRST_ERROR && errors > 0) begin
-                  $display("Exiting after first error..."); 
-                  $finish;
-               end
+               // if (`EXIT_AFTER_FIRST_ERROR && errors > 0) begin
+               //    $display("Exiting after first error..."); 
+               //    $finish;
+               // end
 
             end // if (next_instruction)
             

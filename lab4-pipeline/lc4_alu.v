@@ -43,13 +43,25 @@ module lc4_alu(input  wire [15:0] i_insn,
                   (i_insn[15:11] == 5'd9) ? 6'd34 :
                   (i_insn[15:11] == 5'd25) ? 6'd7 :
                   (i_insn[15:12] == 4'd15) ? 6'd35 :
+                   (i_insn[15:12] == 4'd4) ? 6'd37 : //JSR &JSRR
                   6'd0;
+
+      //if insns = jump
+      //compute next pc + 1
+
 
 
       wire[15:0] add_out;
       wire[15:0] sub_out;
       wire[15:0] div_out;
       wire[15:0] mod_out;
+      wire[15:0] JSR_out;
+
+
+      cla16 jsr_cla(  .a(i_r1data),
+                  .b(16'd1),
+                  .cin(10'd0),
+                  .sum(JSR_out));
 
       wire[15:0] add_b =      (alu_ctl[2:0] == 3'd0) ? b :
                         (alu_ctl[2:0] == 3'd2) ? ~b :
@@ -148,6 +160,7 @@ module lc4_alu(input  wire [15:0] i_insn,
                   (alu_ctl[5:3] == 3'd2) ? (comp_out) :
                   (alu_ctl[5:3] == 3'd3) ? (shift_out) :
                   (alu_ctl[5:3] == 3'd4) ? (const_out) :
+                  (alu_ctl[5:3] == 3'd37) ? (JSR_out) :
                   16'd0;
       
       
