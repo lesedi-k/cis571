@@ -353,10 +353,10 @@ module test_processor;
           end // non-stall cycle
 
          //if (`EXIT_AFTER_FIRST_ERROR &&  errors > 0) begin
-         if (errors > 6) begin
-            $display("Exiting after first error..."); 
-            $finish;
-         end 
+         // if (errors > 6) begin
+         //    $display("Exiting after first error..."); 
+         //    $finish;
+         // end 
                   
       end // while ($fscanf(input_file, ...))
       if (errors > `MAX_ERRORS_TO_DISPLAY) begin
