@@ -149,7 +149,10 @@ module lc4_processor
 
    // Stall check
    assign d_load_use_stall = (x_is_load) && (d_r1_re && d_r1_sel == x_rd_sel|| 
-                              ((d_r2_re && d_r2_sel == x_rd_sel) && (!d_dmem_we)));
+                              ((d_r2_re && d_r2_sel == x_rd_sel) && (!d_dmem_we)) ||
+                              d_is_branch);
+                              
+                              //load won't value unti w, so nzp or branchng needs it
 
    // Post stall check wires
    wire d_sc_rd_we = d_rd_we;
@@ -173,7 +176,8 @@ module lc4_processor
    wire d_rd_we_flush, d_nzp_we_flush;
 
    assign d_rd_we_flush = x_branch_taken ? 1'b0 : d_rd_we;
-   assign d_nzp_we_flush = x_branch_taken ? 1'b0 : d_nzp_we;
+   assign d_nzp_we_flush = d_nzp_we;
+   //x_branch_taken ? 1'b0 : d_nzp_we;
 
    //cleaning
    // wire d_is_load_flush, d_is_branch_flush, d_is_control_insn_flush;
@@ -181,7 +185,6 @@ module lc4_processor
 
 
    //pass back nzp bits
- 
 
 // ************************************* EXECUTE ******************************************
 
@@ -485,6 +488,11 @@ module lc4_processor
     */
 `ifndef NDEBUG
    always @(posedge gwe) begin
+
+      //STORE
+      // if (w_insn[15:12] == 4'b0111)
+      //    $display("STORE PC:%h next rs:%d = %h rd:%d = %h", w_pc, w_r1_sel, w_rs, w_rd_sel, w_dmem_out);
+
       // if (x_rd_sel == 3'd5 && x_rd_we)
       //    $display("R5: %h", x_alu_out);
       // // // if (o_dmem_we)
@@ -511,8 +519,15 @@ module lc4_processor
       //if the instruction = JSR;
       // if (w_insn[15:12] == 4'b1100) 
       // begin
-      //    $display("PC:%h R%d:%h  alu out: %h", w_pc, w_r1_sel, w_rs, w_alu_out);
+      //    $display("JMP PC:%h R%d:%h  alu out: %h", w_pc, w_r1_sel, w_rs, w_alu_out);
       // end
+
+      //NOP
+      // if (w_insn[15:12] == 4'b0000) 
+      // begin
+      //    $display("NOP PC:%h next_pc:%h  alu out: %h", w_pc, w_next_pc, w_rs, w_alu_out);
+      // end
+      
       
 
 
