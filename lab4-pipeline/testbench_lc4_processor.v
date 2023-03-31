@@ -200,11 +200,11 @@ module test_processor;
 
          tests = tests + 1;
 
-         if (errors <= `MAX_ERRORS_TO_DISPLAY && num_cycles >= 1110) begin 
-               $write("%d:", num_cycles);
-               pinstr(test_insn);
-               $display("");
-            end
+         // if (errors <= `MAX_ERRORS_TO_DISPLAY && num_cycles >= 17) begin 
+         //       $write("%d:", num_cycles);
+         //       pinstr(test_insn);
+         //       $display("");
+         //    end
          
        // stall
          if (verify_stall !== test_stall) begin
@@ -230,7 +230,7 @@ module test_processor;
 
          // in stall cycles, ensure no writes are happening
          // NB: not ready yet, sometimes in the reference trace write-enables are set during stall cycles...
-         // if (verify_stall !== 2'b00 && num_cycles >= 1114) begin 
+         // if (verify_stall !== 2'b00) begin // in stall cycles, ensure no writes are happening
          //    if (verify_regfile_we !== test_regfile_we) begin
          //       if (errors <= `MAX_ERRORS_TO_DISPLAY) begin 
          //          $display( "Error at cycle %d: regfile_we should be %h (but was %h)", 
@@ -353,10 +353,10 @@ module test_processor;
           end // non-stall cycle
 
          //if (`EXIT_AFTER_FIRST_ERROR &&  errors > 0) begin
-         // if (errors > 6) begin
-         //    $display("Exiting after first error..."); 
-         //    $finish;
-         // end 
+         if (errors > 6) begin
+            $display("Exiting after first error..."); 
+            $finish;
+         end 
                   
       end // while ($fscanf(input_file, ...))
       if (errors > `MAX_ERRORS_TO_DISPLAY) begin

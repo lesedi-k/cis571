@@ -176,7 +176,13 @@ module lc4_processor
    wire d_rd_we_flush, d_nzp_we_flush;
 
    assign d_rd_we_flush = x_branch_taken ? 1'b0 : d_rd_we;
-   assign d_nzp_we_flush = d_nzp_we;
+   //d_rd_we;
+   //x_branch_taken ? 1'b1 : 
+   //                        (d_insn[15:9] == 7'b0) ? 1'b1 : d_rd_we;
+   //x_branch_taken ? 1'b0 : d_rd_we;
+
+   assign d_nzp_we_flush = x_branch_taken ? 1'b0 : d_nzp_we;
+   //(d_insn[15:9] == 7'b0) ? 1'b1 : d_nzp_we;
    //x_branch_taken ? 1'b0 : d_nzp_we;
 
    //cleaning
@@ -489,6 +495,12 @@ module lc4_processor
 `ifndef NDEBUG
    always @(posedge gwe) begin
 
+      //BR;
+      // if (w_insn[15:12] == 4'b0000) 
+      // begin
+      //    $display("PC:%h nzp:%h  nzp_we:%b alu out: %h", w_pc, w_nzp_bits, w_nzp_we, w_alu_out);
+      // end
+
       //STORE
       // if (w_insn[15:12] == 4'b0111)
       //    $display("STORE PC:%h next rs:%d = %h rd:%d = %h", w_pc, w_r1_sel, w_rs, w_rd_sel, w_dmem_out);
@@ -523,13 +535,17 @@ module lc4_processor
       // end
 
       //NOP
-      // if (w_insn[15:12] == 4'b0000) 
+      // if (w_insn[15:9] == 7'b0) 
       // begin
-      //    $display("NOP PC:%h next_pc:%h  alu out: %h", w_pc, w_next_pc, w_rs, w_alu_out);
+      //    $display("NOP PC:%h next_pc:%h  reg in: %h", w_pc, w_next_pc, w_rs, w_dmem_mux_out);
       // end
-      
-      
 
+      
+      
+      // //ADDI
+      //  if (m_insn[15:12] == 4'b1 && m_insn[5]==1'b1) 
+      //    $display("r5: %d = %h", m_rd_sel, m_alu_out); 
+ 
 
       // if (x_insn[15:12] == 4'b0000 && x_insn[11:9] != 3'b0)
       //    $display("br NZP| m:%b x:%b", m_nzp_bits, x_nzp_bits);
