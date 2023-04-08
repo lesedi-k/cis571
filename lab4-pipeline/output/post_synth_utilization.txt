@@ -1,8 +1,8 @@
 Copyright 1986-2020 Xilinx, Inc. All Rights Reserved.
 ------------------------------------------------------------------------------------
 | Tool Version : Vivado v.2020.2 (lin64) Build 3064766 Wed Nov 18 09:12:47 MST 2020
-| Date         : Fri Mar 17 17:10:32 2023
-| Host         : big17.seas.upenn.edu running 64-bit openSUSE Leap 15.4
+| Date         : Fri Mar 31 23:45:03 2023
+| Host         : big09.seas.upenn.edu running 64-bit openSUSE Leap 15.4
 | Command      : report_utilization -file ./output/post_synth_utilization.txt
 | Design       : lc4_system
 | Device       : 7z020clg484-1
@@ -30,15 +30,15 @@ Table of Contents
 +----------------------------+------+-------+-----------+-------+
 |          Site Type         | Used | Fixed | Available | Util% |
 +----------------------------+------+-------+-----------+-------+
-| Slice LUTs*                |   48 |     0 |     53200 |  0.09 |
-|   LUT as Logic             |   46 |     0 |     53200 |  0.09 |
+| Slice LUTs*                | 1377 |     0 |     53200 |  2.59 |
+|   LUT as Logic             | 1375 |     0 |     53200 |  2.58 |
 |   LUT as Memory            |    2 |     0 |     17400 |  0.01 |
 |     LUT as Distributed RAM |    0 |     0 |           |       |
 |     LUT as Shift Register  |    2 |     0 |           |       |
-| Slice Registers            |   34 |     0 |    106400 |  0.03 |
-|   Register as Flip Flop    |   34 |     0 |    106400 |  0.03 |
+| Slice Registers            |  548 |     0 |    106400 |  0.52 |
+|   Register as Flip Flop    |  548 |     0 |    106400 |  0.52 |
 |   Register as Latch        |    0 |     0 |    106400 |  0.00 |
-| F7 Muxes                   |    0 |     0 |     26600 |  0.00 |
+| F7 Muxes                   |   12 |     0 |     26600 |  0.05 |
 | F8 Muxes                   |    0 |     0 |     13300 |  0.00 |
 +----------------------------+------+-------+-----------+-------+
 * Warning! The Final LUT count, after physical optimizations and full implementation, is typically lower. Run opt_design after synthesis, if not already completed, for a more realistic count.
@@ -59,7 +59,7 @@ Table of Contents
 | 0     |          Yes |           - |          Set |
 | 0     |          Yes |           - |        Reset |
 | 0     |          Yes |         Set |            - |
-| 34    |          Yes |       Reset |            - |
+| 548   |          Yes |       Reset |            - |
 +-------+--------------+-------------+--------------+
 
 
@@ -69,9 +69,9 @@ Table of Contents
 +-------------------+------+-------+-----------+-------+
 |     Site Type     | Used | Fixed | Available | Util% |
 +-------------------+------+-------+-----------+-------+
-| Block RAM Tile    |  1.5 |     0 |       140 |  1.07 |
-|   RAMB36/FIFO*    |    1 |     0 |       140 |  0.71 |
-|     RAMB36E1 only |    1 |       |           |       |
+| Block RAM Tile    | 39.5 |     0 |       140 | 28.21 |
+|   RAMB36/FIFO*    |   39 |     0 |       140 | 27.86 |
+|     RAMB36E1 only |   39 |       |           |       |
 |   RAMB18          |    1 |     0 |       280 |  0.36 |
 |     RAMB18E1 only |    1 |       |           |       |
 +-------------------+------+-------+-----------+-------+
@@ -81,11 +81,12 @@ Table of Contents
 3. DSP
 ------
 
-+-----------+------+-------+-----------+-------+
-| Site Type | Used | Fixed | Available | Util% |
-+-----------+------+-------+-----------+-------+
-| DSPs      |    0 |     0 |       220 |  0.00 |
-+-----------+------+-------+-----------+-------+
++----------------+------+-------+-----------+-------+
+|    Site Type   | Used | Fixed | Available | Util% |
++----------------+------+-------+-----------+-------+
+| DSPs           |    1 |     0 |       220 |  0.45 |
+|   DSP48E1 only |    1 |       |           |       |
++----------------+------+-------+-----------+-------+
 
 
 4. IO and GT Specific
@@ -94,9 +95,9 @@ Table of Contents
 +-----------------------------+------+-------+-----------+-------+
 |          Site Type          | Used | Fixed | Available | Util% |
 +-----------------------------+------+-------+-----------+-------+
-| Bonded IOB                  |   31 |    31 |       200 | 15.50 |
-|   IOB Master Pads           |   15 |       |           |       |
-|   IOB Slave Pads            |   12 |       |           |       |
+| Bonded IOB                  |   36 |    36 |       200 | 18.00 |
+|   IOB Master Pads           |   18 |       |           |       |
+|   IOB Slave Pads            |   14 |       |           |       |
 | Bonded IPADs                |    0 |     0 |         2 |  0.00 |
 | Bonded IOPADs               |    0 |     0 |       130 |  0.00 |
 | PHY_CONTROL                 |    0 |     0 |         4 |  0.00 |
@@ -152,20 +153,23 @@ Table of Contents
 +------------+------+---------------------+
 |  Ref Name  | Used | Functional Category |
 +------------+------+---------------------+
-| FDRE       |   34 |        Flop & Latch |
+| FDRE       |  548 |        Flop & Latch |
+| LUT6       |  445 |                 LUT |
+| LUT4       |  408 |                 LUT |
+| LUT3       |  366 |                 LUT |
+| LUT5       |  252 |                 LUT |
+| LUT2       |  134 |                 LUT |
+| CARRY4     |  122 |          CarryLogic |
+| LUT1       |   61 |                 LUT |
+| RAMB36E1   |   39 |        Block Memory |
 | OBUF       |   22 |                  IO |
-| LUT6       |   21 |                 LUT |
-| LUT5       |   10 |                 LUT |
-| LUT2       |   10 |                 LUT |
-| IBUF       |    9 |                  IO |
-| LUT4       |    8 |                 LUT |
-| LUT3       |    5 |                 LUT |
-| LUT1       |    4 |                 LUT |
+| IBUF       |   14 |                  IO |
+| MUXF7      |   12 |               MuxFx |
 | BUFG       |    4 |               Clock |
 | SRL16E     |    2 |  Distributed Memory |
-| RAMB36E1   |    1 |        Block Memory |
 | RAMB18E1   |    1 |        Block Memory |
 | MMCME2_ADV |    1 |               Clock |
+| DSP48E1    |    1 |    Block Arithmetic |
 +------------+------+---------------------+
 
 

@@ -1,8 +1,8 @@
 Copyright 1986-2020 Xilinx, Inc. All Rights Reserved.
 ----------------------------------------------------------------------------------------
 | Tool Version     : Vivado v.2020.2 (lin64) Build 3064766 Wed Nov 18 09:12:47 MST 2020
-| Date             : Fri Mar 17 17:10:55 2023
-| Host             : big17.seas.upenn.edu running 64-bit openSUSE Leap 15.4
+| Date             : Fri Mar 31 23:45:56 2023
+| Host             : big09.seas.upenn.edu running 64-bit openSUSE Leap 15.4
 | Command          : report_power -file ./output/post_route_power_report.txt
 | Design           : lc4_system
 | Device           : xc7z020clg484-1
@@ -30,14 +30,14 @@ Table of Contents
 ----------
 
 +--------------------------+--------------+
-| Total On-Chip Power (W)  | 0.238        |
+| Total On-Chip Power (W)  | 0.252        |
 | Design Power Budget (W)  | Unspecified* |
 | Power Budget Margin (W)  | NA           |
-| Dynamic (W)              | 0.130        |
-| Device Static (W)        | 0.108        |
+| Dynamic (W)              | 0.142        |
+| Device Static (W)        | 0.110        |
 | Effective TJA (C/W)      | 11.5         |
-| Max Ambient (C)          | 82.3         |
-| Junction Temperature (C) | 27.7         |
+| Max Ambient (C)          | 82.1         |
+| Junction Temperature (C) | 27.9         |
 | Confidence Level         | Low          |
 | Setting File             | ---          |
 | Simulation Activity File | ---          |
@@ -52,18 +52,21 @@ Table of Contents
 +-------------------------+-----------+----------+-----------+-----------------+
 | On-Chip                 | Power (W) | Used     | Available | Utilization (%) |
 +-------------------------+-----------+----------+-----------+-----------------+
-| Clocks                  |    <0.001 |        7 |       --- |             --- |
-| Slice Logic             |    <0.001 |      118 |       --- |             --- |
-|   LUT as Logic          |    <0.001 |       44 |     53200 |            0.08 |
-|   Register              |    <0.001 |       43 |    106400 |            0.04 |
+| Clocks                  |     0.002 |        7 |       --- |             --- |
+| Slice Logic             |    <0.001 |     2524 |       --- |             --- |
+|   LUT as Logic          |    <0.001 |     1338 |     53200 |            2.52 |
+|   CARRY4                |    <0.001 |      122 |     13300 |            0.92 |
+|   Register              |    <0.001 |      564 |    106400 |            0.53 |
+|   F7/F8 Muxes           |    <0.001 |       12 |     53200 |            0.02 |
 |   LUT as Shift Register |    <0.001 |        2 |     17400 |            0.01 |
-|   Others                |     0.000 |       15 |       --- |             --- |
-| Signals                 |    <0.001 |       87 |       --- |             --- |
-| Block RAM               |    <0.001 |      1.5 |       140 |            1.07 |
+|   Others                |     0.000 |      111 |       --- |             --- |
+| Signals                 |     0.001 |     1883 |       --- |             --- |
+| Block RAM               |     0.010 |     39.5 |       140 |           28.21 |
 | MMCM                    |     0.122 |        1 |         4 |           25.00 |
-| I/O                     |     0.006 |       31 |       200 |           15.50 |
-| Static Power            |     0.108 |          |           |                 |
-| Total                   |     0.238 |          |           |                 |
+| DSPs                    |     0.000 |        1 |       220 |            0.45 |
+| I/O                     |     0.006 |       36 |       200 |           18.00 |
+| Static Power            |     0.110 |          |           |                 |
+| Total                   |     0.252 |          |           |                 |
 +-------------------------+-----------+----------+-----------+-----------------+
 
 
@@ -73,8 +76,8 @@ Table of Contents
 +-----------+-------------+-----------+-------------+------------+-------------+-------------+------------+
 | Source    | Voltage (V) | Total (A) | Dynamic (A) | Static (A) | Powerup (A) | Budget (A)  | Margin (A) |
 +-----------+-------------+-----------+-------------+------------+-------------+-------------+------------+
-| Vccint    |       1.000 |     0.010 |       0.002 |      0.008 |       NA    | Unspecified | NA         |
-| Vccaux    |       1.800 |     0.078 |       0.068 |      0.011 |       NA    | Unspecified | NA         |
+| Vccint    |       1.000 |     0.022 |       0.013 |      0.009 |       NA    | Unspecified | NA         |
+| Vccaux    |       1.800 |     0.079 |       0.068 |      0.011 |       NA    | Unspecified | NA         |
 | Vcco33    |       3.300 |     0.003 |       0.002 |      0.001 |       NA    | Unspecified | NA         |
 | Vcco25    |       2.500 |     0.000 |       0.000 |      0.000 |       NA    | Unspecified | NA         |
 | Vcco18    |       1.800 |     0.000 |       0.000 |      0.000 |       NA    | Unspecified | NA         |
@@ -82,7 +85,7 @@ Table of Contents
 | Vcco135   |       1.350 |     0.000 |       0.000 |      0.000 |       NA    | Unspecified | NA         |
 | Vcco12    |       1.200 |     0.000 |       0.000 |      0.000 |       NA    | Unspecified | NA         |
 | Vccaux_io |       1.800 |     0.000 |       0.000 |      0.000 |       NA    | Unspecified | NA         |
-| Vccbram   |       1.000 |     0.001 |       0.000 |      0.001 |       NA    | Unspecified | NA         |
+| Vccbram   |       1.000 |     0.003 |       0.001 |      0.002 |       NA    | Unspecified | NA         |
 | MGTAVcc   |       1.000 |     0.000 |       0.000 |      0.000 |       NA    | Unspecified | NA         |
 | MGTAVtt   |       1.200 |     0.000 |       0.000 |      0.000 |       NA    | Unspecified | NA         |
 | MGTVccaux |       1.800 |     0.000 |       0.000 |      0.000 |       NA    | Unspecified | NA         |
@@ -150,11 +153,14 @@ Table of Contents
 3.1 By Hierarchy
 ----------------
 
-+------------+-----------+
-| Name       | Power (W) |
-+------------+-----------+
-| lc4_system |     0.130 |
-|   mmcm0    |     0.123 |
-+------------+-----------+
++-------------+-----------+
+| Name        | Power (W) |
++-------------+-----------+
+| lc4_system  |     0.142 |
+|   memory    |     0.010 |
+|     memory  |     0.010 |
+|   mmcm0     |     0.123 |
+|   proc_inst |     0.002 |
++-------------+-----------+
 
 

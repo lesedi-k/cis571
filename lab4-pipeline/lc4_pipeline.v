@@ -41,7 +41,6 @@ module lc4_processor
    
    /* DO NOT MODIFY THIS CODE */
    // Always execute one instruction each cycle (test_stall will get used in your pipelined processor)
-   //assign test_stall = 2'b0; 
 
 // ******************************************FETCH***************************************************
    
@@ -77,9 +76,10 @@ module lc4_processor
 
 
    //update PC for next cycles
-//Flushing
+   //Flushing
    wire [15:0] f_insn_flush;
    assign f_insn_flush = (x_branch_taken == 1) ? 16'b0 : f_sc_insn;
+
 
 // ******************************************DECODE***************************************************
    
@@ -176,21 +176,9 @@ module lc4_processor
    wire d_rd_we_flush, d_nzp_we_flush;
 
    assign d_rd_we_flush = x_branch_taken ? 1'b0 : d_rd_we;
-   //d_rd_we;
-   //x_branch_taken ? 1'b1 : 
-   //                        (d_insn[15:9] == 7'b0) ? 1'b1 : d_rd_we;
-   //x_branch_taken ? 1'b0 : d_rd_we;
 
    assign d_nzp_we_flush = x_branch_taken ? 1'b0 : d_nzp_we;
-   //(d_insn[15:9] == 7'b0) ? 1'b1 : d_nzp_we;
-   //x_branch_taken ? 1'b0 : d_nzp_we;
 
-   //cleaning
-   // wire d_is_load_flush, d_is_branch_flush, d_is_control_insn_flush;
-
-
-
-   //pass back nzp bits
 
 // ************************************* EXECUTE ******************************************
 
@@ -263,7 +251,6 @@ module lc4_processor
                         ((x_r2_sel == w_rd_sel) && w_rd_we && !w_load_use_stall) ? w_dmem_mux_out :
                         x_rt;
 
-   
 
    //ALU
    lc4_alu alu(
@@ -279,7 +266,8 @@ module lc4_processor
       .nzp_we(x_nzp_we),
       .data(x_alu_out),
       .insn(x_insn),
-      .out(x_nzp_out),
+      .pc_plus_1_select(x_pc_plus_1_select),
+      .out(x_nzp_out), // This wire is actually useless
       .nzp_bits(x_nzp_bits)
    );
 
@@ -299,14 +287,15 @@ module lc4_processor
       .rs(x_rs),
       .alu_out(x_alu_out),
       .is_branch(x_is_branch),
-      //.branch_taken(x_branch_taken),
       .next_pc(x_next_pc)
    );
 
-   assign x_branch_taken = (x_next_pc != x_pc_inc) ? 1 :
+   assign x_branch_taken = (x_load_use_stall) ? 0 :
+                           (x_next_pc != x_pc_inc) ? 1 :
                            (x_insn[15:12] == 4'b1100) ? 1: 0;
 
    wire[15:0] x_next_pc_out = (x_insn[15:12] == 4'b0110) ? x_next_pc : x_alu_out;
+
 
 // ************************************* MEMORY ******************************************
 
@@ -379,14 +368,14 @@ module lc4_processor
    wire [15:0] m_alu_out, m_dmem_out;
    wire [15:0] m_dmem_mux_out;
 
-   assign m_dmem_addr = (m_is_load | m_dmem_we ) ? m_alu_out : 16'b0;
+   assign m_dmem_addr = ((m_insn != 0) && (m_is_load | m_dmem_we )) ? m_alu_out : 16'b0;
 
    assign o_dmem_addr = m_dmem_addr;
    assign o_dmem_we = m_dmem_we;
 
    assign o_dmem_towrite = m_wm_bp_out;
-   assign m_dmem_out = i_cur_dmem_data;
-   
+   assign m_dmem_out = m_is_load ? i_cur_dmem_data : 16'b0;
+
 
 // ************************************* WRITEBACK ******************************************
    
@@ -460,6 +449,13 @@ module lc4_processor
                         (w_pc_plus_1_select) ? w_pc_inc:
                         w_alu_out;
 
+
+   // Update NZP
+   wire [2:0] w_new_nzp_bits = (w_dmem_mux_out[15] == 1) ? 4 : 
+      (w_dmem_mux_out == 0) ? 2 : 
+      (w_dmem_mux_out > 0) ? 1 : 0;
+
+
 // ************************************* TESTING WIRES ******************************************
 
    assign test_stall = (w_insn == 16'b0) ? 2'd2 : 
@@ -478,7 +474,7 @@ module lc4_processor
    assign test_dmem_addr = w_dmem_addr;
 
    assign test_cur_pc = w_pc;
-   assign test_nzp_new_bits = w_nzp_bits;
+   assign test_nzp_new_bits = w_new_nzp_bits;
    assign test_regfile_data = w_dmem_mux_out;
 
 
@@ -600,14 +596,17 @@ module nzp(
    input wire nzp_we,
    input wire [15:0]  data,
    input wire [15:0] insn,
+   input wire pc_plus_1_select,
    output wire out,
    output wire [2:0] nzp_bits);
 
    //if the instruction is unsigned vs signed
 
-   assign nzp_bits = (data[15] == 1) ? 4 : 
-   (data == 0) ? 2 : 
-   (data > 0) ? 1 : 0;
+   assign nzp_bits = (pc_plus_1_select) ? 1 :
+      (data[15] == 1) ? 4 : 
+      (data == 0) ? 2 : 
+      (data > 0) ? 1 : 
+      0;
 
    //what does out do?
    assign out = (insn[11:9] == nzp_bits) ? 1 : 0;
@@ -662,6 +661,7 @@ module lc4_branch(
       (cur_insn[15:11] == 5'b11000 || cur_insn[15:11] == 5'b01000) ? rs :
       (cur_insn[15:11] == 5'b11001) ? jmp_pc:
       (cur_insn[15:11] == 5'b01001) ? jsr_pc:
+      (cur_insn[15:12] == 4'b1000) ? rs:
       pc_inc;
 
    //assign branch_taken = (next_pc == pc_inc) ? 0 : 1;
