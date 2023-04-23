@@ -39,6 +39,67 @@ module lc4_regfile_ss #(parameter n = 16)
     input  wire          i_rd_we_B   // pipe B: write enable
     );
 
-   /*** TODO: Your Code Here ***/
+   wire [n-1:0] reg_out[7:0];
+
+   genvar i;
+   generate
+   for (i = 0; i < 8; i = i + 1) begin: rd_mux
+      Nbit_reg #(n) one_reg (.in((i_rd_we_B && i_rd_B == i) ? i_wdata_B : i_wdata_A), .out(reg_out[i]), .clk(clk), .we(((i_rd_A == i && i_rd_we_A) || (i_rd_B == i && i_rd_we_B))),
+         .gwe(gwe), .rst(rst));
+   end
+   endgenerate
+
+   wire [n-1:0] rs_out_A = (i_rs_A == 3'd0) ? reg_out[0] :
+                        (i_rs_A == 3'd1) ? reg_out[1] :
+                        (i_rs_A == 3'd2) ? reg_out[2] :
+                        (i_rs_A == 3'd3) ? reg_out[3] :
+                        (i_rs_A == 3'd4) ? reg_out[4] :
+                        (i_rs_A == 3'd5) ? reg_out[5] :
+                        (i_rs_A == 3'd6) ? reg_out[6] :
+                        reg_out[7];
+
+   wire [n-1:0] rt_out_A =  (i_rt_A == 3'd0) ? reg_out[0] :
+                        (i_rt_A == 3'd1) ? reg_out[1] :
+                        (i_rt_A == 3'd2) ? reg_out[2] :
+                        (i_rt_A == 3'd3) ? reg_out[3] :
+                        (i_rt_A == 3'd4) ? reg_out[4] :
+                        (i_rt_A == 3'd5) ? reg_out[5] :
+                        (i_rt_A == 3'd6) ? reg_out[6] :
+                        reg_out[7];
+   
+   wire [n-1:0] rs_out_B = (i_rs_B == 3'd0) ? reg_out[0] :
+                     (i_rs_B == 3'd1) ? reg_out[1] :
+                     (i_rs_B == 3'd2) ? reg_out[2] :
+                     (i_rs_B == 3'd3) ? reg_out[3] :
+                     (i_rs_B == 3'd4) ? reg_out[4] :
+                     (i_rs_B == 3'd5) ? reg_out[5] :
+                     (i_rs_B == 3'd6) ? reg_out[6] :
+                     reg_out[7];
+
+   wire [n-1:0] rt_out_B =  (i_rt_B == 3'd0) ? reg_out[0] :
+                        (i_rt_B == 3'd1) ? reg_out[1] :
+                        (i_rt_B == 3'd2) ? reg_out[2] :
+                        (i_rt_B == 3'd3) ? reg_out[3] :
+                        (i_rt_B == 3'd4) ? reg_out[4] :
+                        (i_rt_B == 3'd5) ? reg_out[5] :
+                        (i_rt_B == 3'd6) ? reg_out[6] :
+                        reg_out[7];
+
+   assign o_rs_data_A = (i_rd_we_B && i_rd_B == i_rs_A) ? i_wdata_B :
+                        (i_rd_we_A && i_rd_A == i_rs_A) ? i_wdata_A :
+                        rs_out_A;
+   
+   assign o_rt_data_A = (i_rd_we_B && i_rd_B == i_rt_A) ? i_wdata_B :
+                        (i_rd_we_A && i_rd_A == i_rt_A) ? i_wdata_A :
+                        rt_out_A;
+   
+   
+   assign o_rs_data_B = (i_rd_we_B && i_rd_B == i_rs_B) ? i_wdata_B :
+                        (i_rd_we_A && i_rd_A == i_rs_B) ? i_wdata_A :
+                        rs_out_B;
+
+   assign o_rt_data_B = (i_rd_we_B && i_rd_B == i_rt_B) ? i_wdata_B :
+                        (i_rd_we_A && i_rd_A == i_rt_B) ? i_wdata_A :
+                        rt_out_B;
 
 endmodule

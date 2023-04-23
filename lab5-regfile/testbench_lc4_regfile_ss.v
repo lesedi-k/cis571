@@ -11,7 +11,13 @@
 `define NULL 0
 
 `define REGISTER_INPUT "test_lc4_regfile_ss.input"
-// `define REGISTER_OUTPUT "regfile_ss_test.output.txt"
+`define REGISTER_OUTPUT "regfile_ss_test.output.txt"
+
+// change this to adjust how many errors are printed out
+`define MAX_ERRORS_TO_DISPLAY 10
+
+// set this to 1 to create a waveform file for easier debugging
+`define GENERATE_VCD 1
 
 module test_regfile;
 
@@ -78,6 +84,11 @@ module test_regfile;
    always #5 clk <= ~clk;
    
    initial begin
+
+      if (`GENERATE_VCD) begin
+         $dumpfile("reg_ss.vcd");
+         $dumpvars;
+      end
       
       // Initialize Inputs
       rs_A = 0;
@@ -136,22 +147,30 @@ module test_regfile;
          end
 
          if (rs_data_A !== expected_rs_A) begin
-            $display("Error at test %d: Value of register %d on output rs_A should have been %h, but was %h instead", tests, rs_A, expected_rs_A, rs_data_A);
+            if (errors <= `MAX_ERRORS_TO_DISPLAY) begin
+               $display("Error at test %d: Value of register %d on output rs_A should have been %h, but was %h instead", tests, rs_A, expected_rs_A, rs_data_A);
+            end
             errors = errors + 1;
          end
          
          if (rt_data_A !== expected_rt_A) begin
-            $display("Error at test %d: Value of register %d on output rt_A should have been %h, but was %h instead", tests, rt_A, expected_rt_A, rt_data_A);
+            if (errors <= `MAX_ERRORS_TO_DISPLAY) begin
+               $display("Error at test %d: Value of register %d on output rt_A should have been %h, but was %h instead", tests, rt_A, expected_rt_A, rt_data_A);
+            end
             errors = errors + 1;
          end
 
          if (rs_data_B !== expected_rs_B) begin
-            $display("Error at test %d: Value of register %d on output rs_B should have been %h, but was %h instead", tests, rs_B, expected_rs_B, rs_data_B);
+            if (errors <= `MAX_ERRORS_TO_DISPLAY) begin
+               $display("Error at test %d: Value of register %d on output rs_B should have been %h, but was %h instead", tests, rs_B, expected_rs_B, rs_data_B);
+            end
             errors = errors + 1;
          end
          
          if (rt_data_B !== expected_rt_B) begin
-            $display("Error at test %d: Value of register %d on output rt_B should have been %h, but was %h instead", tests, rt_B, expected_rt_B, rt_data_B);
+            if (errors <= `MAX_ERRORS_TO_DISPLAY) begin
+               $display("Error at test %d: Value of register %d on output rt_B should have been %h, but was %h instead", tests, rt_B, expected_rt_B, rt_data_B);
+            end
             errors = errors + 1;
          end
          

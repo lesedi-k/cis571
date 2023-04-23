@@ -259,7 +259,7 @@ module lc4_processor
          .i_r1data(x_r1_bp_out),
          .i_r2data(x_r2_bp_out),
          .o_result(x_alu_out)
-      );
+   );
 
 
    nzp nzp(
@@ -273,7 +273,6 @@ module lc4_processor
 
    Nbit_reg #(3, 3'b0) nzp_reg (.in(x_nzp_bits), .out(x_nzp_reg_out), .clk(clk), .we(x_nzp_we), .gwe(gwe), .rst(rst));
 
-   //hole
 
    //TODO: change to see if branch is taken based on nzp or x_next pc?
    wire [15:0] x_next_pc;
